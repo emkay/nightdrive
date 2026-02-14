@@ -88,6 +88,16 @@ export class NdApp extends LitElement {
   private midiAccess = new MidiAccess();
   private midiHandler = new MidiHandler();
 
+  // Lower row: Z–M = C3–B3, sharps on S/D/G/H/J
+  // Upper row: Q–U = C4–B4, sharps on 2/3/5/6/7
+  private static readonly KEY_MAP: Record<string, number> = {
+    z: 48, s: 49, x: 50, d: 51, c: 52, v: 53, g: 54,
+    b: 55, h: 56, n: 57, j: 58, m: 59,
+    q: 60, 2: 61, w: 62, 3: 63, e: 64, r: 65, 5: 66,
+    t: 67, 6: 68, y: 69, 7: 70, u: 71,
+  };
+  private heldKeys = new Set<string>();
+
   @state() private started = false;
   @state() private midiConnected = false;
   @state() private volume = 70;
@@ -97,10 +107,14 @@ export class NdApp extends LitElement {
   override connectedCallback(): void {
     super.connectedCallback();
     this.setupMidi();
+    window.addEventListener('keydown', this.onKeyDown);
+    window.addEventListener('keyup', this.onKeyUp);
   }
 
   override disconnectedCallback(): void {
     super.disconnectedCallback();
+    window.removeEventListener('keydown', this.onKeyDown);
+    window.removeEventListener('keyup', this.onKeyUp);
     this.allocator?.dispose();
     this.midiHandler.dispose();
     this.engine = null;
@@ -206,6 +220,26 @@ export class NdApp extends LitElement {
   private onEnvelopeChange(e: CustomEvent<{ envelope: ADSRParams }>): void {
     this.allocator?.updateParams(e.detail);
   }
+
+  private onKeyDown = (e: KeyboardEvent): void => {
+    if (e.repeat || e.ctrlKey || e.metaKey || e.altKey) return;
+    const note = NdApp.KEY_MAP[e.key.toLowerCase()];
+    if (note === undefined) return;
+    e.preventDefault();
+    this.heldKeys.add(e.key.toLowerCase());
+    if (!this.started) this.start();
+    this.allocator?.noteOn(note, 100);
+    this.keyboard?.setNoteActive(note, true);
+  };
+
+  private onKeyUp = (e: KeyboardEvent): void => {
+    const key = e.key.toLowerCase();
+    const note = NdApp.KEY_MAP[key];
+    if (note === undefined) return;
+    this.heldKeys.delete(key);
+    this.allocator?.noteOff(note);
+    this.keyboard?.setNoteActive(note, false);
+  };
 }
 
 declare global {
