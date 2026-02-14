@@ -58,8 +58,9 @@ export class Voice {
 
     // Brief fade when stealing to avoid click, immediate start otherwise
     const fadeTime = wasActive ? 0.002 : 0;
-    this.gain.gain.cancelAndHoldAtTime(now);
+    this.gain.gain.cancelScheduledValues(now);
     if (wasActive) {
+      this.gain.gain.setValueAtTime(this.gain.gain.value, now);
       this.gain.gain.linearRampToValueAtTime(0, now + fadeTime);
     } else {
       this.gain.gain.setValueAtTime(0, now);
@@ -78,7 +79,8 @@ export class Voice {
     const now = this.ctx.currentTime;
     const { release } = this.params.envelope;
 
-    this.gain.gain.cancelAndHoldAtTime(now);
+    this.gain.gain.cancelScheduledValues(now);
+    this.gain.gain.setValueAtTime(this.gain.gain.value, now);
     this.gain.gain.linearRampToValueAtTime(0, now + release);
 
     this.state = 'releasing';
