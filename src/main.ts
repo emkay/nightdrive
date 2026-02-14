@@ -5,3 +5,4 @@ import './components/nd-knob.js';
 import './components/nd-oscillator.js';
 import './components/nd-filter.js';
 import './components/nd-envelope.js';
+import './components/nd-sequencer.js';

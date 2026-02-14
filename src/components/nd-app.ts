@@ -3,6 +3,7 @@ import { customElement, state, query } from 'lit/decorators.js';
 import { theme, panelStyles } from '../styles/theme.js';
 import { AudioEngine } from '../audio/engine.js';
 import { VoiceAllocator } from '../audio/voice-allocator.js';
+import { StepSequencer } from '../audio/sequencer.js';
 import { MidiAccess } from '../midi/midi-access.js';
 import { MidiHandler } from '../midi/midi-handler.js';
 import type { NoteEvent, OscType, FilterType, ADSRParams } from '../types.js';
@@ -59,7 +60,42 @@ export class NdApp extends LitElement {
         flex-wrap: wrap;
       }
 
+      .tab-bar {
+        display: flex;
+        gap: 0;
+        padding: 0 20px;
+        border-bottom: 1px solid var(--nd-border);
+      }
+
+      .tab {
+        background: none;
+        border: none;
+        border-bottom: 2px solid transparent;
+        color: var(--nd-fg-dim);
+        padding: 8px 16px;
+        font-size: 11px;
+        font-family: var(--nd-font-mono);
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: all 0.1s;
+      }
+
+      .tab:hover {
+        color: var(--nd-fg);
+      }
+
+      .tab.active {
+        color: var(--nd-accent);
+        border-bottom-color: var(--nd-accent);
+      }
+
       .keyboard-container {
+        margin-top: auto;
+        padding: 0 20px 20px;
+      }
+
+      .sequencer-container {
         margin-top: auto;
         padding: 0 20px 20px;
       }
@@ -85,6 +121,7 @@ export class NdApp extends LitElement {
 
   private engine: AudioEngine | null = null;
   private allocator: VoiceAllocator | null = null;
+  private sequencer: StepSequencer | null = null;
   private midiAccess = new MidiAccess();
   private midiHandler = new MidiHandler();
 
@@ -101,6 +138,7 @@ export class NdApp extends LitElement {
   @state() private started = false;
   @state() private midiConnected = false;
   @state() private volume = 70;
+  @state() private activeTab: 'keyboard' | 'sequencer' = 'keyboard';
 
   @query('nd-keyboard') private keyboard!: NdKeyboard;
 
@@ -115,10 +153,12 @@ export class NdApp extends LitElement {
     super.disconnectedCallback();
     window.removeEventListener('keydown', this.onKeyDown);
     window.removeEventListener('keyup', this.onKeyUp);
+    this.sequencer?.dispose();
     this.allocator?.dispose();
     this.midiHandler.dispose();
     this.engine = null;
     this.allocator = null;
+    this.sequencer = null;
   }
 
   override render() {
@@ -152,12 +192,29 @@ export class NdApp extends LitElement {
         <nd-envelope @envelope-change=${this.onEnvelopeChange}></nd-envelope>
       </section>
 
-      <section class="keyboard-container">
-        <nd-keyboard
-          @note-on=${this.onNoteOn}
-          @note-off=${this.onNoteOff}
-        ></nd-keyboard>
-      </section>
+      <div class="tab-bar">
+        <button
+          class="tab ${this.activeTab === 'keyboard' ? 'active' : ''}"
+          @click=${() => this.activeTab = 'keyboard'}
+        >keyboard</button>
+        <button
+          class="tab ${this.activeTab === 'sequencer' ? 'active' : ''}"
+          @click=${() => this.activeTab = 'sequencer'}
+        >sequencer</button>
+      </div>
+
+      ${this.activeTab === 'keyboard' ? html`
+        <section class="keyboard-container">
+          <nd-keyboard
+            @note-on=${this.onNoteOn}
+            @note-off=${this.onNoteOff}
+          ></nd-keyboard>
+        </section>
+      ` : html`
+        <section class="sequencer-container">
+          <nd-sequencer .sequencer=${this.sequencer!}></nd-sequencer>
+        </section>
+      `}
     `;
   }
 
@@ -165,6 +222,7 @@ export class NdApp extends LitElement {
     if (!this.engine) {
       this.engine = new AudioEngine();
       this.allocator = new VoiceAllocator(this.engine.ctx, this.engine.destination);
+      this.sequencer = new StepSequencer(this.allocator, this.engine.ctx);
     }
     await this.engine.start();
     this.started = true;

@@ -37,6 +37,11 @@ export interface NoteEvent {
   velocity: number;
 }
 
+export interface SequencerStep {
+  note: number;     // MIDI note 36–84
+  velocity: number; // 0–127
+}
+
 export interface CCEvent {
   controller: number;
   value: number;
