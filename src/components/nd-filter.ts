@@ -68,7 +68,7 @@ export class NdFilter extends LitElement {
               .max=${20000}
               .value=${p.filterCutoff}
               .step=${1}
-              .help=${this.help}
+
               scale="log"
               value-format="hz"
               @input=${this.onCutoff}
@@ -81,7 +81,7 @@ export class NdFilter extends LitElement {
               .max=${30}
               .value=${p.filterQ}
               .step=${0.5}
-              .help=${this.help}
+
               @input=${this.onResonance}
             ></nd-knob>
           </nd-tooltip>

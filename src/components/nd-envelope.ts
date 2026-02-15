@@ -41,7 +41,7 @@ export class NdEnvelope extends LitElement {
               .max=${2}
               .value=${env.attack}
               .step=${0.01}
-              .help=${this.help}
+
               value-format="s"
               @input=${this.onAttack}
             ></nd-knob>
@@ -53,7 +53,7 @@ export class NdEnvelope extends LitElement {
               .max=${2}
               .value=${env.decay}
               .step=${0.01}
-              .help=${this.help}
+
               value-format="s"
               @input=${this.onDecay}
             ></nd-knob>
@@ -65,7 +65,7 @@ export class NdEnvelope extends LitElement {
               .max=${100}
               .value=${env.sustain * 100}
               .step=${1}
-              .help=${this.help}
+
               value-format="percent"
               @input=${this.onSustain}
             ></nd-knob>
@@ -77,7 +77,7 @@ export class NdEnvelope extends LitElement {
               .max=${5}
               .value=${env.release}
               .step=${0.01}
-              .help=${this.help}
+
               value-format="s"
               @input=${this.onRelease}
             ></nd-knob>

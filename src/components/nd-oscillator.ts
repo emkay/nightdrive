@@ -114,7 +114,7 @@ export class NdOscillator extends LitElement {
               .max=${100}
               .value=${p.volume * 100}
               .step=${1}
-              .help=${this.help}
+
               value-format="percent"
               @input=${this.onVolume}
             ></nd-knob>
@@ -126,7 +126,7 @@ export class NdOscillator extends LitElement {
               .max=${100}
               .value=${p.detune}
               .step=${1}
-              .help=${this.help}
+
               @input=${this.onDetune}
             ></nd-knob>
           </nd-tooltip>

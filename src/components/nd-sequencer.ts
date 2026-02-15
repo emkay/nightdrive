@@ -150,7 +150,7 @@ export class NdSequencer extends LitElement {
               .max=${240}
               .value=${this.bpm}
               .step=${1}
-              .help=${this.help}
+
               @input=${this.onBpmChange}
             ></nd-knob>
           </nd-tooltip>
@@ -167,7 +167,7 @@ export class NdSequencer extends LitElement {
                   .max=${84}
                   .value=${step.note}
                   .step=${1}
-                  .help=${this.help}
+    
                   @input=${(e: CustomEvent<number>) => this.onNoteChange(i, e.detail)}
                 ></nd-knob>
               </nd-tooltip>
@@ -178,7 +178,7 @@ export class NdSequencer extends LitElement {
                   .max=${127}
                   .value=${step.velocity}
                   .step=${1}
-                  .help=${this.help}
+    
                   @input=${(e: CustomEvent<number>) => this.onVelocityChange(i, e.detail)}
                 ></nd-knob>
               </nd-tooltip>

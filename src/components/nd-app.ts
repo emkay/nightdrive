@@ -230,7 +230,6 @@ export class NdApp extends LitElement {
               .min=${0}
               .max=${100}
               .value=${this.volume}
-              .help=${this.helpMode}
               value-format="percent"
               @input=${this.onVolumeChange}
             ></nd-knob>
