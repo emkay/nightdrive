@@ -1,7 +1,7 @@
 import { LitElement, html, css } from 'lit';
-import { customElement, property, state } from 'lit/decorators.js';
+import { customElement, property } from 'lit/decorators.js';
 import { theme, panelStyles, toggleButtonStyles } from '../styles/theme.js';
-import type { FilterType } from '../types.js';
+import type { FilterType, OscParams } from '../types.js';
 
 const FILTER_TYPES: { type: FilterType; label: string }[] = [
   { type: 'lowpass', label: 'LP' },
@@ -36,12 +36,11 @@ export class NdFilter extends LitElement {
   ];
 
   @property({ type: Number }) index = 1;
-
-  @state() private filterType: FilterType = 'lowpass';
-  @state() private cutoff = 2000;
-  @state() private resonance = 5;
+  @property({ attribute: false }) params!: OscParams;
 
   override render() {
+    const p = this.params;
+    if (!p) return html``;
     return html`
       <div class="panel">
         <div class="panel-label">Filter ${this.index}</div>
@@ -49,7 +48,7 @@ export class NdFilter extends LitElement {
           ${FILTER_TYPES.map(
             f => html`
               <button
-                class="toggle-btn ${this.filterType === f.type ? 'active' : ''}"
+                class="toggle-btn ${p.filterType === f.type ? 'active' : ''}"
                 @click=${() => this.selectType(f.type)}
               >
                 ${f.label}
@@ -62,7 +61,7 @@ export class NdFilter extends LitElement {
             label="CUTOFF"
             .min=${20}
             .max=${20000}
-            .value=${this.cutoff}
+            .value=${p.filterCutoff}
             .step=${1}
             scale="log"
             value-format="hz"
@@ -72,7 +71,7 @@ export class NdFilter extends LitElement {
             label="RES"
             .min=${0}
             .max=${30}
-            .value=${this.resonance}
+            .value=${p.filterQ}
             .step=${0.5}
             @input=${this.onResonance}
           ></nd-knob>
@@ -82,29 +81,29 @@ export class NdFilter extends LitElement {
   }
 
   private selectType(type: FilterType): void {
-    this.filterType = type;
-    this.emitChange();
+    this.dispatchEvent(
+      new CustomEvent('filter-change', {
+        detail: { index: this.index, filterType: type, filterCutoff: this.params.filterCutoff, filterQ: this.params.filterQ },
+        bubbles: true,
+        composed: true,
+      }),
+    );
   }
 
   private onCutoff(e: CustomEvent<number>): void {
-    this.cutoff = e.detail;
-    this.emitChange();
+    this.dispatchEvent(
+      new CustomEvent('filter-change', {
+        detail: { index: this.index, filterType: this.params.filterType, filterCutoff: e.detail, filterQ: this.params.filterQ },
+        bubbles: true,
+        composed: true,
+      }),
+    );
   }
 
   private onResonance(e: CustomEvent<number>): void {
-    this.resonance = e.detail;
-    this.emitChange();
-  }
-
-  private emitChange(): void {
     this.dispatchEvent(
       new CustomEvent('filter-change', {
-        detail: {
-          index: this.index,
-          filterType: this.filterType,
-          filterCutoff: this.cutoff,
-          filterQ: this.resonance,
-        },
+        detail: { index: this.index, filterType: this.params.filterType, filterCutoff: this.params.filterCutoff, filterQ: e.detail },
         bubbles: true,
         composed: true,
       }),

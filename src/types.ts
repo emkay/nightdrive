@@ -70,5 +70,6 @@ export interface CCEvent {
 
 /** Convert MIDI note number to frequency in Hz. */
 export function midiToFreq(note: number): number {
-  return 440 * Math.pow(2, (note - 69) / 12);
+  const n = Math.max(0, Math.min(127, note));
+  return 440 * Math.pow(2, (n - 69) / 12);
 }

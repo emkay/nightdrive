@@ -37,8 +37,8 @@ export class MidiHandler extends EventTarget {
     if (!data || data.length < 2) return;
 
     const status = data[0] & 0xf0;
-    const note = data[1];
-    const velocity = data.length > 2 ? data[2] : 0;
+    const note = data[1] & 0x7f;         // clamp to 0–127
+    const velocity = data.length > 2 ? data[2] & 0x7f : 0;
 
     switch (status) {
       case 0x90:

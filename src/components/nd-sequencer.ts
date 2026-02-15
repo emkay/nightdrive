@@ -96,9 +96,12 @@ export class NdSequencer extends LitElement {
 
   @property({ attribute: false }) sequencer!: StepSequencer;
 
-  @state() private playing = false;
   @state() private currentStep = -1;
   @state() private bpm = 120;
+
+  private get playing(): boolean {
+    return this.sequencer?.isPlaying ?? false;
+  }
 
   private boundStepChange = (e: Event) => {
     this.currentStep = (e as CustomEvent<number>).detail;
@@ -179,7 +182,7 @@ export class NdSequencer extends LitElement {
     } else {
       this.sequencer.start();
     }
-    this.playing = !this.playing;
+    this.requestUpdate();
   }
 
   private onBpmChange(e: CustomEvent<number>): void {

@@ -20,7 +20,9 @@ export class StepSequencer extends EventTarget {
   private nextStepTime = 0;
   private currentStep = 0;
   private activeNote: number | null = null;
-  private noteOffTime = 0;
+  private pendingTimeouts: ReturnType<typeof setTimeout>[] = [];
+  /** Incremented on stop() to invalidate in-flight callbacks. */
+  private generation = 0;
 
   constructor(private allocator: VoiceAllocator, private ctx: AudioContext) {
     super();
@@ -52,10 +54,17 @@ export class StepSequencer extends EventTarget {
   stop(): void {
     if (!this._playing) return;
     this._playing = false;
+    this.generation++;
+
     if (this.intervalId !== null) {
       clearInterval(this.intervalId);
       this.intervalId = null;
     }
+
+    // Cancel all pending note-on/off timeouts
+    for (const id of this.pendingTimeouts) clearTimeout(id);
+    this.pendingTimeouts = [];
+
     // Release any held note
     if (this.activeNote !== null) {
       this.allocator.noteOff(this.activeNote);
@@ -80,12 +89,14 @@ export class StepSequencer extends EventTarget {
   private scheduleStep(stepIndex: number, time: number): void {
     const step = this.steps[stepIndex];
     const noteDuration = this.stepDuration * 0.8;
+    const gen = this.generation;
 
     // Schedule note-on/off using setTimeout aligned to audio time
     const onDelay = Math.max(0, (time - this.ctx.currentTime) * 1000);
     const offDelay = Math.max(0, (time + noteDuration - this.ctx.currentTime) * 1000);
 
-    setTimeout(() => {
+    const onId = setTimeout(() => {
+      if (this.generation !== gen) return;
       // Turn off previous note if still active
       if (this.activeNote !== null) {
         this.allocator.noteOff(this.activeNote);
@@ -99,11 +110,14 @@ export class StepSequencer extends EventTarget {
       this.dispatchEvent(new CustomEvent('step-change', { detail: stepIndex }));
     }, onDelay);
 
-    setTimeout(() => {
+    const offId = setTimeout(() => {
+      if (this.generation !== gen) return;
       if (this.activeNote === step.note) {
         this.allocator.noteOff(step.note);
         this.activeNote = null;
       }
     }, offDelay);
+
+    this.pendingTimeouts.push(onId, offId);
   }
 }

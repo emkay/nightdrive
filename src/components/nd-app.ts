@@ -6,6 +6,7 @@ import { VoiceAllocator } from '../audio/voice-allocator.js';
 import { StepSequencer } from '../audio/sequencer.js';
 import { MidiAccess } from '../midi/midi-access.js';
 import { MidiHandler } from '../midi/midi-handler.js';
+import { ParamStore } from '../param-store.js';
 import type { NoteEvent, FilterType, ADSRParams, VoiceParamsUpdate } from '../types.js';
 import type { OscChangeDetail } from './nd-oscillator.js';
 import type { NdKeyboard } from './nd-keyboard.js';
@@ -131,6 +132,7 @@ export class NdApp extends LitElement {
   private sequencer: StepSequencer | null = null;
   private midiAccess = new MidiAccess();
   private midiHandler = new MidiHandler();
+  private store = new ParamStore();
 
   // Lower row: Z–M = C3–B3, sharps on S/D/G/H/J
   // Upper row: Q–U = C4–B4, sharps on 2/3/5/6/7
@@ -146,18 +148,21 @@ export class NdApp extends LitElement {
   @state() private midiConnected = false;
   @state() private volume = 70;
   @state() private activeTab: 'keyboard' | 'sequencer' = 'keyboard';
+  @state() private paramVersion = 0;
 
   @query('nd-keyboard') private keyboard!: NdKeyboard;
 
   override connectedCallback(): void {
     super.connectedCallback();
     this.setupMidi();
+    this.store.addEventListener('change', this.onStoreChange);
     window.addEventListener('keydown', this.onKeyDown);
     window.addEventListener('keyup', this.onKeyUp);
   }
 
   override disconnectedCallback(): void {
     super.disconnectedCallback();
+    this.store.removeEventListener('change', this.onStoreChange);
     window.removeEventListener('keydown', this.onKeyDown);
     window.removeEventListener('keyup', this.onKeyUp);
     this.sequencer?.dispose();
@@ -169,6 +174,11 @@ export class NdApp extends LitElement {
   }
 
   override render() {
+    // Read from store (paramVersion triggers re-render on changes)
+    void this.paramVersion;
+    const osc1 = this.store.osc1;
+    const osc2 = this.store.osc2;
+
     return html`
       ${!this.started
         ? html`<div class="start-overlay" @click=${this.start}>
@@ -195,25 +205,25 @@ export class NdApp extends LitElement {
 
       <section class="params">
         <div class="osc-row">
-          <nd-oscillator .index=${1} .enabled=${true} osc-type="sawtooth" @osc-change=${this.onOscChange}></nd-oscillator>
-          <nd-filter .index=${1} @filter-change=${this.onFilterChange}></nd-filter>
-          <nd-envelope .index=${1} @envelope-change=${this.onEnvelopeChange}></nd-envelope>
+          <nd-oscillator .index=${1} .params=${osc1} @osc-change=${this.onOscChange}></nd-oscillator>
+          <nd-filter .index=${1} .params=${osc1} @filter-change=${this.onFilterChange}></nd-filter>
+          <nd-envelope .index=${1} .params=${osc1} @envelope-change=${this.onEnvelopeChange}></nd-envelope>
         </div>
         <div class="osc-row">
-          <nd-oscillator .index=${2} .enabled=${false} osc-type="square" @osc-change=${this.onOscChange}></nd-oscillator>
-          <nd-filter .index=${2} @filter-change=${this.onFilterChange}></nd-filter>
-          <nd-envelope .index=${2} @envelope-change=${this.onEnvelopeChange}></nd-envelope>
+          <nd-oscillator .index=${2} .params=${osc2} @osc-change=${this.onOscChange}></nd-oscillator>
+          <nd-filter .index=${2} .params=${osc2} @filter-change=${this.onFilterChange}></nd-filter>
+          <nd-envelope .index=${2} .params=${osc2} @envelope-change=${this.onEnvelopeChange}></nd-envelope>
         </div>
       </section>
 
       <div class="tab-bar">
         <button
           class="tab ${this.activeTab === 'keyboard' ? 'active' : ''}"
-          @click=${() => this.activeTab = 'keyboard'}
+          @click=${() => this.switchTab('keyboard')}
         >keyboard</button>
         <button
           class="tab ${this.activeTab === 'sequencer' ? 'active' : ''}"
-          @click=${() => this.activeTab = 'sequencer'}
+          @click=${() => this.switchTab('sequencer')}
         >sequencer</button>
       </div>
 
@@ -267,6 +277,13 @@ export class NdApp extends LitElement {
     }) as EventListener);
   }
 
+  /** Called when the ParamStore changes — push to audio and re-render. */
+  private onStoreChange = (e: Event): void => {
+    const update = (e as CustomEvent<VoiceParamsUpdate>).detail;
+    this.allocator?.updateParams(update);
+    this.paramVersion++;
+  };
+
   private onNoteOn(e: CustomEvent<NoteEvent>): void {
     if (!this.started) this.start();
     this.allocator?.noteOn(e.detail.note, e.detail.velocity);
@@ -274,6 +291,14 @@ export class NdApp extends LitElement {
 
   private onNoteOff(e: CustomEvent<NoteEvent>): void {
     this.allocator?.noteOff(e.detail.note);
+  }
+
+  private switchTab(tab: 'keyboard' | 'sequencer'): void {
+    if (tab === this.activeTab) return;
+    if (this.activeTab === 'sequencer') {
+      this.sequencer?.stop();
+    }
+    this.activeTab = tab;
   }
 
   private onVolumeChange(e: CustomEvent<number>): void {
@@ -284,28 +309,19 @@ export class NdApp extends LitElement {
   private onOscChange(e: CustomEvent<OscChangeDetail>): void {
     const { index, oscType, detune, enabled, volume } = e.detail;
     const key = index === 2 ? 'osc2' : 'osc1';
-    const update: VoiceParamsUpdate = {
-      [key]: { type: oscType, detune, enabled, volume },
-    };
-    this.allocator?.updateParams(update);
+    this.store.update({ [key]: { type: oscType, detune, enabled, volume } });
   }
 
   private onFilterChange(e: CustomEvent<{ index: number; filterType: FilterType; filterCutoff: number; filterQ: number }>): void {
     const { index, filterType, filterCutoff, filterQ } = e.detail;
     const key = index === 2 ? 'osc2' : 'osc1';
-    const update: VoiceParamsUpdate = {
-      [key]: { filterType, filterCutoff, filterQ },
-    };
-    this.allocator?.updateParams(update);
+    this.store.update({ [key]: { filterType, filterCutoff, filterQ } });
   }
 
   private onEnvelopeChange(e: CustomEvent<{ index: number; envelope: ADSRParams }>): void {
     const { index, envelope } = e.detail;
     const key = index === 2 ? 'osc2' : 'osc1';
-    const update: VoiceParamsUpdate = {
-      [key]: { envelope },
-    };
-    this.allocator?.updateParams(update);
+    this.store.update({ [key]: { envelope } });
   }
 
   private onKeyDown = (e: KeyboardEvent): void => {

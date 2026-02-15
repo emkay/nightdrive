@@ -1,7 +1,7 @@
 import { LitElement, html, css } from 'lit';
-import { customElement, property, state } from 'lit/decorators.js';
+import { customElement, property } from 'lit/decorators.js';
 import { theme, panelStyles, toggleButtonStyles } from '../styles/theme.js';
-import type { OscType } from '../types.js';
+import type { OscType, OscParams } from '../types.js';
 
 const WAVEFORMS: { type: OscType; label: string }[] = [
   { type: 'sine', label: 'SIN' },
@@ -74,27 +74,25 @@ export class NdOscillator extends LitElement {
   ];
 
   @property({ type: Number }) index = 1;
-  @property({ type: Boolean }) enabled = true;
-  @property({ attribute: 'osc-type' }) oscType: OscType = 'sawtooth';
-
-  @state() private detune = 0;
-  @state() private volume = 80;
+  @property({ attribute: false }) params!: OscParams;
 
   override render() {
+    const p = this.params;
+    if (!p) return html``;
     return html`
       <div class="panel">
         <div class="panel-header">
           <span class="panel-label" style="margin-bottom:0">OSC ${this.index}</span>
           <button
-            class="on-off ${this.enabled ? 'on' : ''}"
+            class="on-off ${p.enabled ? 'on' : ''}"
             @click=${this.toggleEnabled}
-          >${this.enabled ? 'ON' : 'OFF'}</button>
+          >${p.enabled ? 'ON' : 'OFF'}</button>
         </div>
-        <div class="waveforms" style="${this.enabled ? '' : 'opacity:0.3;pointer-events:none'}">
+        <div class="waveforms" style="${p.enabled ? '' : 'opacity:0.3;pointer-events:none'}">
           ${WAVEFORMS.map(
             w => html`
               <button
-                class="toggle-btn ${this.oscType === w.type ? 'active' : ''}"
+                class="toggle-btn ${p.type === w.type ? 'active' : ''}"
                 @click=${() => this.selectWave(w.type)}
               >
                 ${w.label}
@@ -102,12 +100,12 @@ export class NdOscillator extends LitElement {
             `,
           )}
         </div>
-        <div class="knobs" style="${this.enabled ? '' : 'opacity:0.3;pointer-events:none'}">
+        <div class="knobs" style="${p.enabled ? '' : 'opacity:0.3;pointer-events:none'}">
           <nd-knob
             label="VOL"
             .min=${0}
             .max=${100}
-            .value=${this.volume}
+            .value=${p.volume * 100}
             .step=${1}
             value-format="percent"
             @input=${this.onVolume}
@@ -116,7 +114,7 @@ export class NdOscillator extends LitElement {
             label="DETUNE"
             .min=${-100}
             .max=${100}
-            .value=${this.detune}
+            .value=${p.detune}
             .step=${1}
             @input=${this.onDetune}
           ></nd-knob>
@@ -126,29 +124,32 @@ export class NdOscillator extends LitElement {
   }
 
   private toggleEnabled(): void {
-    this.enabled = !this.enabled;
-    this.emitChange();
+    this.emitChange({ enabled: !this.params.enabled });
   }
 
   private selectWave(type: OscType): void {
-    this.oscType = type;
-    this.emitChange();
+    this.emitChange({ oscType: type });
   }
 
   private onVolume(e: CustomEvent<number>): void {
-    this.volume = e.detail;
-    this.emitChange();
+    this.emitChange({ volume: e.detail / 100 });
   }
 
   private onDetune(e: CustomEvent<number>): void {
-    this.detune = e.detail;
-    this.emitChange();
+    this.emitChange({ detune: e.detail });
   }
 
-  private emitChange(): void {
+  private emitChange(partial: { oscType?: OscType; detune?: number; enabled?: boolean; volume?: number }): void {
+    const p = this.params;
     this.dispatchEvent(
       new CustomEvent<OscChangeDetail>('osc-change', {
-        detail: { index: this.index, oscType: this.oscType, detune: this.detune, enabled: this.enabled, volume: this.volume / 100 },
+        detail: {
+          index: this.index,
+          oscType: partial.oscType ?? p.type,
+          detune: partial.detune ?? p.detune,
+          enabled: partial.enabled ?? p.enabled,
+          volume: partial.volume ?? p.volume,
+        },
         bubbles: true,
         composed: true,
       }),

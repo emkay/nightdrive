@@ -1,7 +1,7 @@
 import { LitElement, html, css } from 'lit';
-import { customElement, property, state } from 'lit/decorators.js';
+import { customElement, property } from 'lit/decorators.js';
 import { theme, panelStyles } from '../styles/theme.js';
-import type { ADSRParams } from '../types.js';
+import type { ADSRParams, OscParams } from '../types.js';
 
 @customElement('nd-envelope')
 export class NdEnvelope extends LitElement {
@@ -22,13 +22,12 @@ export class NdEnvelope extends LitElement {
   ];
 
   @property({ type: Number }) index = 1;
-
-  @state() private attack = 0.01;
-  @state() private decay = 0.2;
-  @state() private sustain = 0.6;
-  @state() private release = 0.3;
+  @property({ attribute: false }) params!: OscParams;
 
   override render() {
+    const p = this.params;
+    if (!p) return html``;
+    const env = p.envelope;
     return html`
       <div class="panel">
         <div class="panel-label">Envelope ${this.index}</div>
@@ -37,7 +36,7 @@ export class NdEnvelope extends LitElement {
             label="A"
             .min=${0.001}
             .max=${2}
-            .value=${this.attack}
+            .value=${env.attack}
             .step=${0.01}
             value-format="s"
             @input=${this.onAttack}
@@ -46,7 +45,7 @@ export class NdEnvelope extends LitElement {
             label="D"
             .min=${0.001}
             .max=${2}
-            .value=${this.decay}
+            .value=${env.decay}
             .step=${0.01}
             value-format="s"
             @input=${this.onDecay}
@@ -55,7 +54,7 @@ export class NdEnvelope extends LitElement {
             label="S"
             .min=${0}
             .max=${100}
-            .value=${this.sustain * 100}
+            .value=${env.sustain * 100}
             .step=${1}
             value-format="percent"
             @input=${this.onSustain}
@@ -64,7 +63,7 @@ export class NdEnvelope extends LitElement {
             label="R"
             .min=${0.01}
             .max=${5}
-            .value=${this.release}
+            .value=${env.release}
             .step=${0.01}
             value-format="s"
             @input=${this.onRelease}
@@ -74,33 +73,7 @@ export class NdEnvelope extends LitElement {
     `;
   }
 
-  private onAttack(e: CustomEvent<number>): void {
-    this.attack = e.detail;
-    this.emitChange();
-  }
-
-  private onDecay(e: CustomEvent<number>): void {
-    this.decay = e.detail;
-    this.emitChange();
-  }
-
-  private onSustain(e: CustomEvent<number>): void {
-    this.sustain = e.detail / 100;
-    this.emitChange();
-  }
-
-  private onRelease(e: CustomEvent<number>): void {
-    this.release = e.detail;
-    this.emitChange();
-  }
-
-  private emitChange(): void {
-    const envelope: ADSRParams = {
-      attack: this.attack,
-      decay: this.decay,
-      sustain: this.sustain,
-      release: this.release,
-    };
+  private emitEnvelope(envelope: ADSRParams): void {
     this.dispatchEvent(
       new CustomEvent('envelope-change', {
         detail: { index: this.index, envelope },
@@ -108,6 +81,22 @@ export class NdEnvelope extends LitElement {
         composed: true,
       }),
     );
+  }
+
+  private onAttack(e: CustomEvent<number>): void {
+    this.emitEnvelope({ ...this.params.envelope, attack: e.detail });
+  }
+
+  private onDecay(e: CustomEvent<number>): void {
+    this.emitEnvelope({ ...this.params.envelope, decay: e.detail });
+  }
+
+  private onSustain(e: CustomEvent<number>): void {
+    this.emitEnvelope({ ...this.params.envelope, sustain: e.detail / 100 });
+  }
+
+  private onRelease(e: CustomEvent<number>): void {
+    this.emitEnvelope({ ...this.params.envelope, release: e.detail });
   }
 }
 
