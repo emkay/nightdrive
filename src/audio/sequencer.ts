@@ -20,7 +20,7 @@ export class StepSequencer extends EventTarget {
   private nextStepTime = 0;
   private currentStep = 0;
   private activeNote: number | null = null;
-  private pendingTimeouts: ReturnType<typeof setTimeout>[] = [];
+  private pendingTimeouts = new Set<ReturnType<typeof setTimeout>>();
   /** Incremented on stop() to invalidate in-flight callbacks. */
   private generation = 0;
 
@@ -63,7 +63,7 @@ export class StepSequencer extends EventTarget {
 
     // Cancel all pending note-on/off timeouts
     for (const id of this.pendingTimeouts) clearTimeout(id);
-    this.pendingTimeouts = [];
+    this.pendingTimeouts.clear();
 
     // Release any held note
     if (this.activeNote !== null) {
@@ -96,6 +96,7 @@ export class StepSequencer extends EventTarget {
     const offDelay = Math.max(0, (time + noteDuration - this.ctx.currentTime) * 1000);
 
     const onId = setTimeout(() => {
+      this.pendingTimeouts.delete(onId);
       if (this.generation !== gen) return;
       // Turn off previous note if still active
       if (this.activeNote !== null) {
@@ -111,6 +112,7 @@ export class StepSequencer extends EventTarget {
     }, onDelay);
 
     const offId = setTimeout(() => {
+      this.pendingTimeouts.delete(offId);
       if (this.generation !== gen) return;
       if (this.activeNote === step.note) {
         this.allocator.noteOff(step.note);
@@ -118,6 +120,7 @@ export class StepSequencer extends EventTarget {
       }
     }, offDelay);
 
-    this.pendingTimeouts.push(onId, offId);
+    this.pendingTimeouts.add(onId);
+    this.pendingTimeouts.add(offId);
   }
 }
