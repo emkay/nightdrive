@@ -69,6 +69,7 @@ export class NdKnob extends LitElement {
   @property({ type: String }) label = '';
   @property({ type: String, attribute: 'value-format' }) valueFormat: 'number' | 'percent' | 'hz' | 'ms' | 's' = 'number';
   @property({ type: String }) scale: 'linear' | 'log' = 'linear';
+  @property({ type: Boolean }) help = false;
 
   private dragging = false;
   private dragStartY = 0;

@@ -2,6 +2,7 @@ import { LitElement, html, css } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { theme, panelStyles } from '../styles/theme.js';
 import { StepSequencer, midiNoteName } from '../audio/sequencer.js';
+import './nd-tooltip.js';
 
 @customElement('nd-sequencer')
 export class NdSequencer extends LitElement {
@@ -95,6 +96,7 @@ export class NdSequencer extends LitElement {
   ];
 
   @property({ attribute: false }) sequencer!: StepSequencer;
+  @property({ type: Boolean }) help = false;
 
   @state() private currentStep = -1;
   @state() private bpm = 120;
@@ -133,42 +135,53 @@ export class NdSequencer extends LitElement {
     return html`
       <div class="sequencer">
         <div class="transport">
-          <button
-            class="play-btn ${this.playing ? 'playing' : ''}"
-            @click=${this.togglePlay}
-          >
-            ${this.playing ? 'STOP' : 'PLAY'}
-          </button>
-          <nd-knob
-            label="BPM"
-            .min=${60}
-            .max=${240}
-            .value=${this.bpm}
-            .step=${1}
-            @input=${this.onBpmChange}
-          ></nd-knob>
+          <nd-tooltip text="Start or stop the sequence" .active=${this.help}>
+            <button
+              class="play-btn ${this.playing ? 'playing' : ''}"
+              @click=${this.togglePlay}
+            >
+              ${this.playing ? 'STOP' : 'PLAY'}
+            </button>
+          </nd-tooltip>
+          <nd-tooltip text="Tempo in beats per minute" .active=${this.help}>
+            <nd-knob
+              label="BPM"
+              .min=${60}
+              .max=${240}
+              .value=${this.bpm}
+              .step=${1}
+              .help=${this.help}
+              @input=${this.onBpmChange}
+            ></nd-knob>
+          </nd-tooltip>
         </div>
         <div class="steps">
           ${this.sequencer.steps.map((step, i) => html`
             <div class="step ${i === this.currentStep ? 'active' : ''}">
               <div class="step-dot"></div>
               <span class="note-label">${midiNoteName(step.note)}</span>
-              <nd-knob
-                label="NOTE"
-                .min=${36}
-                .max=${84}
-                .value=${step.note}
-                .step=${1}
-                @input=${(e: CustomEvent<number>) => this.onNoteChange(i, e.detail)}
-              ></nd-knob>
-              <nd-knob
-                label="VEL"
-                .min=${0}
-                .max=${127}
-                .value=${step.velocity}
-                .step=${1}
-                @input=${(e: CustomEvent<number>) => this.onVelocityChange(i, e.detail)}
-              ></nd-knob>
+              <nd-tooltip text="MIDI note for this step" .active=${this.help}>
+                <nd-knob
+                  label="NOTE"
+                  .min=${36}
+                  .max=${84}
+                  .value=${step.note}
+                  .step=${1}
+                  .help=${this.help}
+                  @input=${(e: CustomEvent<number>) => this.onNoteChange(i, e.detail)}
+                ></nd-knob>
+              </nd-tooltip>
+              <nd-tooltip text="Step velocity. Set to 0 to silence." .active=${this.help}>
+                <nd-knob
+                  label="VEL"
+                  .min=${0}
+                  .max=${127}
+                  .value=${step.velocity}
+                  .step=${1}
+                  .help=${this.help}
+                  @input=${(e: CustomEvent<number>) => this.onVelocityChange(i, e.detail)}
+                ></nd-knob>
+              </nd-tooltip>
             </div>
           `)}
         </div>

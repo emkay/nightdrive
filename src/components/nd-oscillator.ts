@@ -2,6 +2,7 @@ import { LitElement, html, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { theme, panelStyles, toggleButtonStyles } from '../styles/theme.js';
 import type { OscType, OscParams } from '../types.js';
+import './nd-tooltip.js';
 
 const WAVEFORMS: { type: OscType; label: string }[] = [
   { type: 'sine', label: 'SIN' },
@@ -75,6 +76,7 @@ export class NdOscillator extends LitElement {
 
   @property({ type: Number }) index = 1;
   @property({ attribute: false }) params!: OscParams;
+  @property({ type: Boolean }) help = false;
 
   override render() {
     const p = this.params;
@@ -83,41 +85,51 @@ export class NdOscillator extends LitElement {
       <div class="panel">
         <div class="panel-header">
           <span class="panel-label" style="margin-bottom:0">OSC ${this.index}</span>
-          <button
-            class="on-off ${p.enabled ? 'on' : ''}"
-            @click=${this.toggleEnabled}
-          >${p.enabled ? 'ON' : 'OFF'}</button>
+          <nd-tooltip text="Enable or disable this oscillator" .active=${this.help}>
+            <button
+              class="on-off ${p.enabled ? 'on' : ''}"
+              @click=${this.toggleEnabled}
+            >${p.enabled ? 'ON' : 'OFF'}</button>
+          </nd-tooltip>
         </div>
-        <div class="waveforms" style="${p.enabled ? '' : 'opacity:0.3;pointer-events:none'}">
-          ${WAVEFORMS.map(
-            w => html`
-              <button
-                class="toggle-btn ${p.type === w.type ? 'active' : ''}"
-                @click=${() => this.selectWave(w.type)}
-              >
-                ${w.label}
-              </button>
-            `,
-          )}
-        </div>
+        <nd-tooltip text="Waveform shape — SIN: smooth, TRI: mellow, SAW: bright, SQR: hollow" .active=${this.help}>
+          <div class="waveforms" style="${p.enabled ? '' : 'opacity:0.3;pointer-events:none'}">
+            ${WAVEFORMS.map(
+              w => html`
+                <button
+                  class="toggle-btn ${p.type === w.type ? 'active' : ''}"
+                  @click=${() => this.selectWave(w.type)}
+                >
+                  ${w.label}
+                </button>
+              `,
+            )}
+          </div>
+        </nd-tooltip>
         <div class="knobs" style="${p.enabled ? '' : 'opacity:0.3;pointer-events:none'}">
-          <nd-knob
-            label="VOL"
-            .min=${0}
-            .max=${100}
-            .value=${p.volume * 100}
-            .step=${1}
-            value-format="percent"
-            @input=${this.onVolume}
-          ></nd-knob>
-          <nd-knob
-            label="DETUNE"
-            .min=${-100}
-            .max=${100}
-            .value=${p.detune}
-            .step=${1}
-            @input=${this.onDetune}
-          ></nd-knob>
+          <nd-tooltip text="Oscillator volume. Drag up/down to adjust." .active=${this.help}>
+            <nd-knob
+              label="VOL"
+              .min=${0}
+              .max=${100}
+              .value=${p.volume * 100}
+              .step=${1}
+              .help=${this.help}
+              value-format="percent"
+              @input=${this.onVolume}
+            ></nd-knob>
+          </nd-tooltip>
+          <nd-tooltip text="Fine-tune pitch ±100 cents. Detune both oscillators for chorus." .active=${this.help}>
+            <nd-knob
+              label="DETUNE"
+              .min=${-100}
+              .max=${100}
+              .value=${p.detune}
+              .step=${1}
+              .help=${this.help}
+              @input=${this.onDetune}
+            ></nd-knob>
+          </nd-tooltip>
         </div>
       </div>
     `;

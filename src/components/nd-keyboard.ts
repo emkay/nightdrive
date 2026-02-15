@@ -1,6 +1,7 @@
 import { LitElement, html, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { theme } from '../styles/theme.js';
+import './nd-tooltip.js';
 
 interface KeyDef {
   note: number;
@@ -61,6 +62,7 @@ export class NdKeyboard extends LitElement {
 
   @property({ type: Number }) startNote = 48;
   @property({ type: Number }) octaves = 2;
+  @property({ type: Boolean }) help = false;
 
   private activeNotes = new Set<number>();
   private pointerNoteMap = new Map<number, number>();
@@ -72,24 +74,26 @@ export class NdKeyboard extends LitElement {
     const totalWhites = whiteKeys.length;
 
     return html`
-      <div class="keyboard"
-        @pointerdown=${this.onPointerDown}
-        @pointerup=${this.onPointerUp}
-        @pointerleave=${this.onPointerUp}
-        @pointercancel=${this.onPointerUp}>
-        ${whiteKeys.map(k => html`
-          <div class="white-key ${this.activeNotes.has(k.note) ? 'active' : ''}"
-            data-note=${k.note}></div>
-        `)}
-        ${blackKeys.map(k => {
-          const leftPercent = (k.position / totalWhites) * 100;
-          return html`
-            <div class="black-key ${this.activeNotes.has(k.note) ? 'active' : ''}"
-              data-note=${k.note}
-              style="left: ${leftPercent}%; transform: translateX(-50%)"></div>
-          `;
-        })}
-      </div>
+      <nd-tooltip text="Click keys to play. Computer keys Z–M and Q–U also work." .active=${this.help} position="top">
+        <div class="keyboard"
+          @pointerdown=${this.onPointerDown}
+          @pointerup=${this.onPointerUp}
+          @pointerleave=${this.onPointerUp}
+          @pointercancel=${this.onPointerUp}>
+          ${whiteKeys.map(k => html`
+            <div class="white-key ${this.activeNotes.has(k.note) ? 'active' : ''}"
+              data-note=${k.note}></div>
+          `)}
+          ${blackKeys.map(k => {
+            const leftPercent = (k.position / totalWhites) * 100;
+            return html`
+              <div class="black-key ${this.activeNotes.has(k.note) ? 'active' : ''}"
+                data-note=${k.note}
+                style="left: ${leftPercent}%; transform: translateX(-50%)"></div>
+            `;
+          })}
+        </div>
+      </nd-tooltip>
     `;
   }
 

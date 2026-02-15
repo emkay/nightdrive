@@ -2,6 +2,7 @@ import { LitElement, html, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { theme, panelStyles } from '../styles/theme.js';
 import type { ADSRParams, OscParams } from '../types.js';
+import './nd-tooltip.js';
 
 @customElement('nd-envelope')
 export class NdEnvelope extends LitElement {
@@ -23,6 +24,7 @@ export class NdEnvelope extends LitElement {
 
   @property({ type: Number }) index = 1;
   @property({ attribute: false }) params!: OscParams;
+  @property({ type: Boolean }) help = false;
 
   override render() {
     const p = this.params;
@@ -32,42 +34,54 @@ export class NdEnvelope extends LitElement {
       <div class="panel">
         <div class="panel-label">Envelope ${this.index}</div>
         <div class="knobs">
-          <nd-knob
-            label="A"
-            .min=${0.001}
-            .max=${2}
-            .value=${env.attack}
-            .step=${0.01}
-            value-format="s"
-            @input=${this.onAttack}
-          ></nd-knob>
-          <nd-knob
-            label="D"
-            .min=${0.001}
-            .max=${2}
-            .value=${env.decay}
-            .step=${0.01}
-            value-format="s"
-            @input=${this.onDecay}
-          ></nd-knob>
-          <nd-knob
-            label="S"
-            .min=${0}
-            .max=${100}
-            .value=${env.sustain * 100}
-            .step=${1}
-            value-format="percent"
-            @input=${this.onSustain}
-          ></nd-knob>
-          <nd-knob
-            label="R"
-            .min=${0.01}
-            .max=${5}
-            .value=${env.release}
-            .step=${0.01}
-            value-format="s"
-            @input=${this.onRelease}
-          ></nd-knob>
+          <nd-tooltip text="Attack — time to reach full volume" .active=${this.help}>
+            <nd-knob
+              label="A"
+              .min=${0.001}
+              .max=${2}
+              .value=${env.attack}
+              .step=${0.01}
+              .help=${this.help}
+              value-format="s"
+              @input=${this.onAttack}
+            ></nd-knob>
+          </nd-tooltip>
+          <nd-tooltip text="Decay — time to fall to sustain level" .active=${this.help}>
+            <nd-knob
+              label="D"
+              .min=${0.001}
+              .max=${2}
+              .value=${env.decay}
+              .step=${0.01}
+              .help=${this.help}
+              value-format="s"
+              @input=${this.onDecay}
+            ></nd-knob>
+          </nd-tooltip>
+          <nd-tooltip text="Sustain — volume while key is held" .active=${this.help}>
+            <nd-knob
+              label="S"
+              .min=${0}
+              .max=${100}
+              .value=${env.sustain * 100}
+              .step=${1}
+              .help=${this.help}
+              value-format="percent"
+              @input=${this.onSustain}
+            ></nd-knob>
+          </nd-tooltip>
+          <nd-tooltip text="Release — fade time after key released" .active=${this.help}>
+            <nd-knob
+              label="R"
+              .min=${0.01}
+              .max=${5}
+              .value=${env.release}
+              .step=${0.01}
+              .help=${this.help}
+              value-format="s"
+              @input=${this.onRelease}
+            ></nd-knob>
+          </nd-tooltip>
         </div>
       </div>
     `;
