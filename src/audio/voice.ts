@@ -142,7 +142,18 @@ class OscillatorChain {
 
   stopOsc(): void {
     if (this.osc) {
-      try { this.osc.stop(); this.osc.disconnect(); } catch {}
+      try { this.osc.stop(); } catch {}
+      try { this.osc.disconnect(); } catch {}
+      this.osc = null;
+    }
+  }
+
+  /** Fade-safe stop: keep old osc alive briefly so the envelope crossfade has signal. */
+  stopOscGraceful(now: number): void {
+    if (this.osc) {
+      const oscRef = this.osc;
+      try { oscRef.stop(now + 0.01); } catch {}
+      setTimeout(() => { try { oscRef.disconnect(); } catch {} }, 20);
       this.osc = null;
     }
   }
@@ -178,14 +189,21 @@ export class Voice {
 
   noteOn(frequency: number, velocity: number, note: number): void {
     const wasActive = this.state !== 'idle';
-    this.chain1.stopOsc();
-    this.chain2.stopOsc();
+    const now = this.ctx.currentTime;
+
+    // Gracefully stop old oscillators — let them ring during the
+    // envelope's 2 ms fade-to-zero so there's no hard discontinuity.
+    if (wasActive) {
+      this.chain1.stopOscGraceful(now);
+      this.chain2.stopOscGraceful(now);
+    } else {
+      this.chain1.stopOsc();
+      this.chain2.stopOsc();
+    }
     if (this.releaseTimeout !== null) {
       clearTimeout(this.releaseTimeout);
       this.releaseTimeout = null;
     }
-
-    const now = this.ctx.currentTime;
     const amp = velocity / 127;
     this.lastFrequency = frequency;
     this.lastVelocity = velocity;
