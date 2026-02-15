@@ -1,5 +1,5 @@
 import { Voice } from './voice.js';
-import { type VoiceParams, midiToFreq } from '../types.js';
+import { type VoiceParamsUpdate, midiToFreq } from '../types.js';
 
 /**
  * Manages a pool of Voice instances for polyphony.
@@ -32,9 +32,9 @@ export class VoiceAllocator {
   }
 
   /** Update params on all voices. */
-  updateParams(params: Partial<VoiceParams>): void {
+  updateParams(update: VoiceParamsUpdate): void {
     for (const voice of this.voices) {
-      voice.updateParams(params);
+      voice.updateParams(update);
     }
   }
 

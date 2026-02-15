@@ -1,11 +1,27 @@
-import { type VoiceParams, DEFAULT_VOICE_PARAMS } from '../types.js';
+import { type VoiceParams, type VoiceParamsUpdate, type OscParams, type ADSRParams, DEFAULT_VOICE_PARAMS } from '../types.js';
 
 export type VoiceState = 'idle' | 'active' | 'releasing';
 
+function deepCopyParams(p: VoiceParams): VoiceParams {
+  return {
+    osc1: { ...p.osc1, envelope: { ...p.osc1.envelope } },
+    osc2: { ...p.osc2, envelope: { ...p.osc2.envelope } },
+  };
+}
+
 export class Voice {
-  private osc: OscillatorNode | null = null;
-  private filter: BiquadFilterNode;
-  private gain: GainNode;
+  private osc1: OscillatorNode | null = null;
+  private osc2: OscillatorNode | null = null;
+
+  // Per-oscillator persistent nodes
+  private filter1: BiquadFilterNode;
+  private envGain1: GainNode;
+  private volGain1: GainNode;
+
+  private filter2: BiquadFilterNode;
+  private envGain2: GainNode;
+  private volGain2: GainNode;
+
   private ctx: AudioContext;
   private destination: AudioNode;
 
@@ -13,7 +29,7 @@ export class Voice {
   currentNote: number = -1;
   startedAt: number = 0;
 
-  params: VoiceParams = { ...DEFAULT_VOICE_PARAMS, envelope: { ...DEFAULT_VOICE_PARAMS.envelope } };
+  params: VoiceParams = deepCopyParams(DEFAULT_VOICE_PARAMS);
 
   private releaseTimeout: ReturnType<typeof setTimeout> | null = null;
 
@@ -21,16 +37,27 @@ export class Voice {
     this.ctx = ctx;
     this.destination = destination;
 
-    this.filter = ctx.createBiquadFilter();
-    this.filter.type = this.params.filterType;
-    this.filter.frequency.value = this.params.filterCutoff;
-    this.filter.Q.value = this.params.filterQ;
+    // Osc1 chain: filter1 → envGain1 → volGain1 → destination
+    this.filter1 = ctx.createBiquadFilter();
+    this.envGain1 = ctx.createGain();
+    this.volGain1 = ctx.createGain();
+    this.applyFilterParams(this.filter1, this.params.osc1);
+    this.envGain1.gain.value = 0;
+    this.volGain1.gain.value = this.params.osc1.volume;
+    this.filter1.connect(this.envGain1);
+    this.envGain1.connect(this.volGain1);
+    this.volGain1.connect(this.destination);
 
-    this.gain = ctx.createGain();
-    this.gain.gain.value = 0;
-
-    this.filter.connect(this.gain);
-    this.gain.connect(this.destination);
+    // Osc2 chain: filter2 → envGain2 → volGain2 → destination
+    this.filter2 = ctx.createBiquadFilter();
+    this.envGain2 = ctx.createGain();
+    this.volGain2 = ctx.createGain();
+    this.applyFilterParams(this.filter2, this.params.osc2);
+    this.envGain2.gain.value = 0;
+    this.volGain2.gain.value = this.params.osc2.volume;
+    this.filter2.connect(this.envGain2);
+    this.envGain2.connect(this.volGain2);
+    this.volGain2.connect(this.destination);
   }
 
   noteOn(frequency: number, velocity: number, note: number): void {
@@ -42,31 +69,38 @@ export class Voice {
     }
 
     const now = this.ctx.currentTime;
-    const { attack, decay, sustain } = this.params.envelope;
     const amp = velocity / 127;
 
-    this.osc = this.ctx.createOscillator();
-    this.osc.type = this.params.oscType;
-    this.osc.frequency.value = frequency;
-    this.osc.detune.value = this.params.detune;
-    this.osc.connect(this.filter);
-    this.osc.start(now);
-
-    this.filter.type = this.params.filterType;
-    this.filter.frequency.setTargetAtTime(this.params.filterCutoff, now, 0.005);
-    this.filter.Q.setTargetAtTime(this.params.filterQ, now, 0.005);
-
-    // Brief fade when stealing to avoid click, immediate start otherwise
-    const fadeTime = wasActive ? 0.002 : 0;
-    this.gain.gain.cancelScheduledValues(now);
-    if (wasActive) {
-      this.gain.gain.setValueAtTime(this.gain.gain.value, now);
-      this.gain.gain.linearRampToValueAtTime(0, now + fadeTime);
+    // Osc1
+    if (this.params.osc1.enabled) {
+      this.osc1 = this.ctx.createOscillator();
+      this.osc1.type = this.params.osc1.type;
+      this.osc1.frequency.value = frequency;
+      this.osc1.detune.value = this.params.osc1.detune;
+      this.osc1.connect(this.filter1);
+      this.osc1.start(now);
+      this.applyFilterParams(this.filter1, this.params.osc1);
+      this.applyEnvelope(this.envGain1, this.params.osc1.envelope, amp, wasActive, now);
     } else {
-      this.gain.gain.setValueAtTime(0, now);
+      // Silence this chain
+      this.envGain1.gain.cancelScheduledValues(now);
+      this.envGain1.gain.setValueAtTime(0, now);
     }
-    this.gain.gain.linearRampToValueAtTime(amp, now + fadeTime + attack);
-    this.gain.gain.linearRampToValueAtTime(amp * sustain, now + fadeTime + attack + decay);
+
+    // Osc2
+    if (this.params.osc2.enabled) {
+      this.osc2 = this.ctx.createOscillator();
+      this.osc2.type = this.params.osc2.type;
+      this.osc2.frequency.value = frequency;
+      this.osc2.detune.value = this.params.osc2.detune;
+      this.osc2.connect(this.filter2);
+      this.osc2.start(now);
+      this.applyFilterParams(this.filter2, this.params.osc2);
+      this.applyEnvelope(this.envGain2, this.params.osc2.envelope, amp, wasActive, now);
+    } else {
+      this.envGain2.gain.cancelScheduledValues(now);
+      this.envGain2.gain.setValueAtTime(0, now);
+    }
 
     this.state = 'active';
     this.currentNote = note;
@@ -77,71 +111,133 @@ export class Voice {
     if (this.state !== 'active') return;
 
     const now = this.ctx.currentTime;
-    const { release } = this.params.envelope;
+    const release1 = this.params.osc1.envelope.release;
+    const release2 = this.params.osc2.envelope.release;
+    const maxRelease = Math.max(release1, release2);
 
-    this.gain.gain.cancelScheduledValues(now);
-    this.gain.gain.setValueAtTime(this.gain.gain.value, now);
-    this.gain.gain.linearRampToValueAtTime(0, now + release);
+    // Release osc1
+    if (this.osc1) {
+      this.envGain1.gain.cancelScheduledValues(now);
+      this.envGain1.gain.setValueAtTime(this.envGain1.gain.value, now);
+      this.envGain1.gain.linearRampToValueAtTime(0, now + release1);
+      try { this.osc1.stop(now + release1); } catch {}
+    }
+
+    // Release osc2
+    if (this.osc2) {
+      this.envGain2.gain.cancelScheduledValues(now);
+      this.envGain2.gain.setValueAtTime(this.envGain2.gain.value, now);
+      this.envGain2.gain.linearRampToValueAtTime(0, now + release2);
+      try { this.osc2.stop(now + release2); } catch {}
+    }
 
     this.state = 'releasing';
 
-    if (this.osc) {
-      try { this.osc.stop(now + release); } catch {}
-    }
-
     this.releaseTimeout = setTimeout(() => {
       if (this.state === 'releasing') {
-        if (this.osc) {
-          try { this.osc.disconnect(); } catch {}
-          this.osc = null;
-        }
+        this.disconnectOsc(1);
+        this.disconnectOsc(2);
         this.state = 'idle';
         this.currentNote = -1;
       }
       this.releaseTimeout = null;
-    }, release * 1000 + 100);
+    }, maxRelease * 1000 + 100);
   }
 
-  updateParams(params: Partial<VoiceParams>): void {
-    if (params.oscType !== undefined) {
-      this.params.oscType = params.oscType;
-      if (this.osc) this.osc.type = params.oscType;
+  updateParams(update: VoiceParamsUpdate): void {
+    if (update.osc1) this.applyOscUpdate(1, update.osc1);
+    if (update.osc2) this.applyOscUpdate(2, update.osc2);
+  }
+
+  private applyOscUpdate(index: 1 | 2, partial: Partial<OscParams>): void {
+    const p = index === 1 ? this.params.osc1 : this.params.osc2;
+    const osc = index === 1 ? this.osc1 : this.osc2;
+    const filter = index === 1 ? this.filter1 : this.filter2;
+    const volGain = index === 1 ? this.volGain1 : this.volGain2;
+    const now = this.ctx.currentTime;
+
+    if (partial.type !== undefined) {
+      p.type = partial.type;
+      if (osc) osc.type = partial.type;
     }
-    if (params.detune !== undefined) {
-      this.params.detune = params.detune;
-      if (this.osc) this.osc.detune.setTargetAtTime(params.detune, this.ctx.currentTime, 0.005);
+    if (partial.detune !== undefined) {
+      p.detune = partial.detune;
+      if (osc) osc.detune.setTargetAtTime(partial.detune, now, 0.005);
     }
-    if (params.filterType !== undefined) {
-      this.params.filterType = params.filterType;
-      this.filter.type = params.filterType;
+    if (partial.enabled !== undefined) {
+      p.enabled = partial.enabled;
     }
-    if (params.filterCutoff !== undefined) {
-      this.params.filterCutoff = params.filterCutoff;
-      this.filter.frequency.setTargetAtTime(params.filterCutoff, this.ctx.currentTime, 0.005);
+    if (partial.volume !== undefined) {
+      p.volume = partial.volume;
+      volGain.gain.setTargetAtTime(partial.volume, now, 0.005);
     }
-    if (params.filterQ !== undefined) {
-      this.params.filterQ = params.filterQ;
-      this.filter.Q.setTargetAtTime(params.filterQ, this.ctx.currentTime, 0.005);
+    if (partial.filterType !== undefined) {
+      p.filterType = partial.filterType;
+      filter.type = partial.filterType;
     }
-    if (params.envelope) {
-      Object.assign(this.params.envelope, params.envelope);
+    if (partial.filterCutoff !== undefined) {
+      p.filterCutoff = partial.filterCutoff;
+      filter.frequency.setTargetAtTime(partial.filterCutoff, now, 0.005);
+    }
+    if (partial.filterQ !== undefined) {
+      p.filterQ = partial.filterQ;
+      filter.Q.setTargetAtTime(partial.filterQ, now, 0.005);
+    }
+    if (partial.envelope) {
+      Object.assign(p.envelope, partial.envelope);
+    }
+  }
+
+  private applyEnvelope(gain: GainNode, env: ADSRParams, amp: number, wasActive: boolean, now: number): void {
+    const { attack, decay, sustain } = env;
+    const fadeTime = wasActive ? 0.002 : 0;
+    gain.gain.cancelScheduledValues(now);
+    if (wasActive) {
+      gain.gain.setValueAtTime(gain.gain.value, now);
+      gain.gain.linearRampToValueAtTime(0, now + fadeTime);
+    } else {
+      gain.gain.setValueAtTime(0, now);
+    }
+    gain.gain.linearRampToValueAtTime(amp, now + fadeTime + attack);
+    gain.gain.linearRampToValueAtTime(amp * sustain, now + fadeTime + attack + decay);
+  }
+
+  private applyFilterParams(filter: BiquadFilterNode, p: OscParams): void {
+    filter.type = p.filterType;
+    filter.frequency.value = p.filterCutoff;
+    filter.Q.value = p.filterQ;
+  }
+
+  private disconnectOsc(num: 1 | 2): void {
+    const osc = num === 1 ? this.osc1 : this.osc2;
+    if (osc) {
+      try { osc.disconnect(); } catch {}
+      if (num === 1) this.osc1 = null;
+      else this.osc2 = null;
     }
   }
 
   private stopOsc(): void {
-    if (this.osc) {
-      try {
-        this.osc.stop();
-        this.osc.disconnect();
-      } catch {}
-      this.osc = null;
+    for (const osc of [this.osc1, this.osc2]) {
+      if (osc) {
+        try {
+          osc.stop();
+          osc.disconnect();
+        } catch {}
+      }
     }
+    this.osc1 = null;
+    this.osc2 = null;
   }
 
   dispose(): void {
     this.stopOsc();
     if (this.releaseTimeout !== null) clearTimeout(this.releaseTimeout);
-    this.gain.disconnect();
-    this.filter.disconnect();
+    this.filter1.disconnect();
+    this.envGain1.disconnect();
+    this.volGain1.disconnect();
+    this.filter2.disconnect();
+    this.envGain2.disconnect();
+    this.volGain2.disconnect();
   }
 }

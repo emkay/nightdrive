@@ -9,26 +9,47 @@ export interface ADSRParams {
   release: number;  // seconds
 }
 
-export interface VoiceParams {
-  oscType: OscType;
-  detune: number;          // cents
+export interface OscParams {
+  type: OscType;
+  detune: number;        // cents
+  enabled: boolean;
+  volume: number;        // 0–1
   filterType: FilterType;
-  filterCutoff: number;    // Hz
-  filterQ: number;         // 0–30
+  filterCutoff: number;  // Hz
+  filterQ: number;       // 0–30
   envelope: ADSRParams;
 }
 
+export interface VoiceParams {
+  osc1: OscParams;
+  osc2: OscParams;
+}
+
+export type VoiceParamsUpdate = {
+  osc1?: Partial<OscParams>;
+  osc2?: Partial<OscParams>;
+};
+
 export const DEFAULT_VOICE_PARAMS: VoiceParams = {
-  oscType: 'sawtooth',
-  detune: 0,
-  filterType: 'lowpass',
-  filterCutoff: 2000,
-  filterQ: 5,
-  envelope: {
-    attack: 0.01,
-    decay: 0.2,
-    sustain: 0.6,
-    release: 0.3,
+  osc1: {
+    type: 'sawtooth',
+    detune: 0,
+    enabled: true,
+    volume: 0.8,
+    filterType: 'lowpass',
+    filterCutoff: 2000,
+    filterQ: 5,
+    envelope: { attack: 0.01, decay: 0.2, sustain: 0.6, release: 0.3 },
+  },
+  osc2: {
+    type: 'square',
+    detune: 0,
+    enabled: false,
+    volume: 0.8,
+    filterType: 'lowpass',
+    filterCutoff: 2000,
+    filterQ: 5,
+    envelope: { attack: 0.01, decay: 0.2, sustain: 0.6, release: 0.3 },
   },
 };
 

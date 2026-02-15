@@ -6,7 +6,8 @@ import { VoiceAllocator } from '../audio/voice-allocator.js';
 import { StepSequencer } from '../audio/sequencer.js';
 import { MidiAccess } from '../midi/midi-access.js';
 import { MidiHandler } from '../midi/midi-handler.js';
-import type { NoteEvent, OscType, FilterType, ADSRParams } from '../types.js';
+import type { NoteEvent, FilterType, ADSRParams, VoiceParamsUpdate } from '../types.js';
+import type { OscChangeDetail } from './nd-oscillator.js';
 import type { NdKeyboard } from './nd-keyboard.js';
 
 @customElement('nd-app')
@@ -55,8 +56,14 @@ export class NdApp extends LitElement {
 
       .params {
         display: flex;
+        flex-direction: column;
         gap: 12px;
         padding: 16px 20px;
+      }
+
+      .osc-row {
+        display: flex;
+        gap: 12px;
         flex-wrap: wrap;
       }
 
@@ -187,9 +194,16 @@ export class NdApp extends LitElement {
       </header>
 
       <section class="params">
-        <nd-oscillator @osc-change=${this.onOscChange}></nd-oscillator>
-        <nd-filter @filter-change=${this.onFilterChange}></nd-filter>
-        <nd-envelope @envelope-change=${this.onEnvelopeChange}></nd-envelope>
+        <div class="osc-row">
+          <nd-oscillator .index=${1} .enabled=${true} osc-type="sawtooth" @osc-change=${this.onOscChange}></nd-oscillator>
+          <nd-filter .index=${1} @filter-change=${this.onFilterChange}></nd-filter>
+          <nd-envelope .index=${1} @envelope-change=${this.onEnvelopeChange}></nd-envelope>
+        </div>
+        <div class="osc-row">
+          <nd-oscillator .index=${2} .enabled=${false} osc-type="square" @osc-change=${this.onOscChange}></nd-oscillator>
+          <nd-filter .index=${2} @filter-change=${this.onFilterChange}></nd-filter>
+          <nd-envelope .index=${2} @envelope-change=${this.onEnvelopeChange}></nd-envelope>
+        </div>
       </section>
 
       <div class="tab-bar">
@@ -267,16 +281,31 @@ export class NdApp extends LitElement {
     this.engine?.setMasterVolume(e.detail / 100);
   }
 
-  private onOscChange(e: CustomEvent<{ oscType?: OscType; detune?: number }>): void {
-    this.allocator?.updateParams(e.detail);
+  private onOscChange(e: CustomEvent<OscChangeDetail>): void {
+    const { index, oscType, detune, enabled, volume } = e.detail;
+    const key = index === 2 ? 'osc2' : 'osc1';
+    const update: VoiceParamsUpdate = {
+      [key]: { type: oscType, detune, enabled, volume },
+    };
+    this.allocator?.updateParams(update);
   }
 
-  private onFilterChange(e: CustomEvent<{ filterType?: FilterType; filterCutoff?: number; filterQ?: number }>): void {
-    this.allocator?.updateParams(e.detail);
+  private onFilterChange(e: CustomEvent<{ index: number; filterType: FilterType; filterCutoff: number; filterQ: number }>): void {
+    const { index, filterType, filterCutoff, filterQ } = e.detail;
+    const key = index === 2 ? 'osc2' : 'osc1';
+    const update: VoiceParamsUpdate = {
+      [key]: { filterType, filterCutoff, filterQ },
+    };
+    this.allocator?.updateParams(update);
   }
 
-  private onEnvelopeChange(e: CustomEvent<{ envelope: ADSRParams }>): void {
-    this.allocator?.updateParams(e.detail);
+  private onEnvelopeChange(e: CustomEvent<{ index: number; envelope: ADSRParams }>): void {
+    const { index, envelope } = e.detail;
+    const key = index === 2 ? 'osc2' : 'osc1';
+    const update: VoiceParamsUpdate = {
+      [key]: { envelope },
+    };
+    this.allocator?.updateParams(update);
   }
 
   private onKeyDown = (e: KeyboardEvent): void => {

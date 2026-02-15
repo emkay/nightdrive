@@ -1,5 +1,5 @@
 import { LitElement, html, css } from 'lit';
-import { customElement, state } from 'lit/decorators.js';
+import { customElement, property, state } from 'lit/decorators.js';
 import { theme, panelStyles } from '../styles/theme.js';
 import type { ADSRParams } from '../types.js';
 
@@ -21,6 +21,8 @@ export class NdEnvelope extends LitElement {
     `,
   ];
 
+  @property({ type: Number }) index = 1;
+
   @state() private attack = 0.01;
   @state() private decay = 0.2;
   @state() private sustain = 0.6;
@@ -29,7 +31,7 @@ export class NdEnvelope extends LitElement {
   override render() {
     return html`
       <div class="panel">
-        <div class="panel-label">Envelope</div>
+        <div class="panel-label">Envelope ${this.index}</div>
         <div class="knobs">
           <nd-knob
             label="A"
@@ -101,7 +103,7 @@ export class NdEnvelope extends LitElement {
     };
     this.dispatchEvent(
       new CustomEvent('envelope-change', {
-        detail: { envelope },
+        detail: { index: this.index, envelope },
         bubbles: true,
         composed: true,
       }),

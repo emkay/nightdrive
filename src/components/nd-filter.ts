@@ -1,5 +1,5 @@
 import { LitElement, html, css } from 'lit';
-import { customElement, state } from 'lit/decorators.js';
+import { customElement, property, state } from 'lit/decorators.js';
 import { theme, panelStyles, toggleButtonStyles } from '../styles/theme.js';
 import type { FilterType } from '../types.js';
 
@@ -35,6 +35,8 @@ export class NdFilter extends LitElement {
     `,
   ];
 
+  @property({ type: Number }) index = 1;
+
   @state() private filterType: FilterType = 'lowpass';
   @state() private cutoff = 2000;
   @state() private resonance = 5;
@@ -42,7 +44,7 @@ export class NdFilter extends LitElement {
   override render() {
     return html`
       <div class="panel">
-        <div class="panel-label">Filter</div>
+        <div class="panel-label">Filter ${this.index}</div>
         <div class="filter-types">
           ${FILTER_TYPES.map(
             f => html`
@@ -98,6 +100,7 @@ export class NdFilter extends LitElement {
     this.dispatchEvent(
       new CustomEvent('filter-change', {
         detail: {
+          index: this.index,
           filterType: this.filterType,
           filterCutoff: this.cutoff,
           filterQ: this.resonance,
