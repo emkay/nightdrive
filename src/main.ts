@@ -7,3 +7,4 @@ import './components/nd-filter.js';
 import './components/nd-envelope.js';
 import './components/nd-sequencer.js';
 import './components/nd-drawer.js';
+import './components/nd-effects-panel.js';

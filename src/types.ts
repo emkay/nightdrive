@@ -68,6 +68,57 @@ export interface CCEvent {
   value: number;
 }
 
+export interface ReverbParams {
+  enabled: boolean;
+  mix: number;      // 0–1
+  decay: number;    // 0.1–10 seconds
+  preDelay: number; // 0–0.1 seconds
+}
+
+export interface DistortionParams {
+  enabled: boolean;
+  mix: number;   // 0–1
+  drive: number; // 1–100
+  tone: number;  // 200–8000 Hz
+}
+
+export interface ChorusParams {
+  enabled: boolean;
+  mix: number;   // 0–1
+  rate: number;  // 0.1–10 Hz
+  depth: number; // 0–1
+  delay: number; // 5–30 ms
+}
+
+export interface EQParams {
+  enabled: boolean;
+  lowGain: number;  // -12–+12 dB
+  midGain: number;  // -12–+12 dB
+  midFreq: number;  // 200–8000 Hz
+  highGain: number; // -12–+12 dB
+}
+
+export interface EffectsParams {
+  reverb: ReverbParams;
+  distortion: DistortionParams;
+  chorus: ChorusParams;
+  eq: EQParams;
+}
+
+export type EffectsParamsUpdate = {
+  reverb?: Partial<ReverbParams>;
+  distortion?: Partial<DistortionParams>;
+  chorus?: Partial<ChorusParams>;
+  eq?: Partial<EQParams>;
+};
+
+export const DEFAULT_EFFECTS_PARAMS: EffectsParams = {
+  reverb: { enabled: false, mix: 0.3, decay: 2, preDelay: 0.02 },
+  distortion: { enabled: false, mix: 0.5, drive: 10, tone: 4000 },
+  chorus: { enabled: false, mix: 0.5, rate: 1.5, depth: 0.5, delay: 15 },
+  eq: { enabled: true, lowGain: 0, midGain: 0, midFreq: 1000, highGain: 0 },
+};
+
 /** Convert MIDI note number to frequency in Hz. */
 export function midiToFreq(note: number): number {
   const n = Math.max(0, Math.min(127, note));

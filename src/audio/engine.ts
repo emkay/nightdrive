@@ -1,3 +1,5 @@
+import { EffectsChain } from './effects-chain.js';
+
 /**
  * AudioEngine — owns the AudioContext, master gain, and analyser.
  * Call start() on a user gesture to resume the context.
@@ -6,6 +8,7 @@ export class AudioEngine {
   readonly ctx: AudioContext;
   readonly masterGain: GainNode;
   readonly analyser: AnalyserNode;
+  readonly effects: EffectsChain;
 
   private _started = false;
 
@@ -14,10 +17,13 @@ export class AudioEngine {
     this.masterGain = this.ctx.createGain();
     this.masterGain.gain.value = 0.7;
 
+    this.effects = new EffectsChain(this.ctx);
+
     this.analyser = this.ctx.createAnalyser();
     this.analyser.fftSize = 2048;
 
-    this.masterGain.connect(this.analyser);
+    this.masterGain.connect(this.effects.input);
+    this.effects.output.connect(this.analyser);
     this.analyser.connect(this.ctx.destination);
   }
 

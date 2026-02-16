@@ -7,7 +7,8 @@ import { StepSequencer } from '../audio/sequencer.js';
 import { MidiAccess } from '../midi/midi-access.js';
 import { MidiHandler } from '../midi/midi-handler.js';
 import { ParamStore } from '../param-store.js';
-import type { NoteEvent, FilterType, ADSRParams, VoiceParamsUpdate } from '../types.js';
+import { EffectsParamStore } from '../effects-param-store.js';
+import type { NoteEvent, FilterType, ADSRParams, VoiceParamsUpdate, EffectsParamsUpdate, ReverbParams, DistortionParams, ChorusParams, EQParams } from '../types.js';
 import type { OscChangeDetail } from './nd-oscillator.js';
 import type { NdKeyboard } from './nd-keyboard.js';
 import './nd-tooltip.js';
@@ -161,6 +162,7 @@ export class NdApp extends LitElement {
   private midiAccess = new MidiAccess();
   private midiHandler = new MidiHandler();
   private store = new ParamStore();
+  private effectsStore = new EffectsParamStore();
 
   // Lower row: Z–M = C3–B3, sharps on S/D/G/H/J
   // Upper row: Q–U = C4–B4, sharps on 2/3/5/6/7
@@ -179,6 +181,7 @@ export class NdApp extends LitElement {
   @state() private helpMode = false;
   @state() private drawerOpen = false;
   @state() private paramVersion = 0;
+  @state() private fxParamVersion = 0;
 
   @query('nd-keyboard') private keyboard!: NdKeyboard;
 
@@ -186,6 +189,7 @@ export class NdApp extends LitElement {
     super.connectedCallback();
     this.setupMidi();
     this.store.addEventListener('change', this.onStoreChange);
+    this.effectsStore.addEventListener('change', this.onEffectsStoreChange);
     window.addEventListener('keydown', this.onKeyDown);
     window.addEventListener('keyup', this.onKeyUp);
   }
@@ -193,6 +197,7 @@ export class NdApp extends LitElement {
   override disconnectedCallback(): void {
     super.disconnectedCallback();
     this.store.removeEventListener('change', this.onStoreChange);
+    this.effectsStore.removeEventListener('change', this.onEffectsStoreChange);
     window.removeEventListener('keydown', this.onKeyDown);
     window.removeEventListener('keyup', this.onKeyUp);
     this.sequencer?.dispose();
@@ -204,11 +209,18 @@ export class NdApp extends LitElement {
   }
 
   override render() {
-    // Read from store (paramVersion triggers re-render on changes).
-    // Shallow-copy so Lit detects changes (ParamStore mutates in place).
+    // Read from stores (version counters trigger re-render on changes).
+    // Shallow-copy so Lit detects changes (stores mutate in place).
     void this.paramVersion;
+    void this.fxParamVersion;
     const osc1 = { ...this.store.osc1, envelope: { ...this.store.osc1.envelope } };
     const osc2 = { ...this.store.osc2, envelope: { ...this.store.osc2.envelope } };
+    const fxParams = {
+      reverb: { ...this.effectsStore.reverb },
+      distortion: { ...this.effectsStore.distortion },
+      chorus: { ...this.effectsStore.chorus },
+      eq: { ...this.effectsStore.eq },
+    };
 
     return html`
       ${!this.started
@@ -288,8 +300,12 @@ export class NdApp extends LitElement {
         .open=${this.drawerOpen}
         title="Effects"
         @drawer-close=${this.onDrawerClose}
+        @reverb-change=${this.onReverbChange}
+        @distortion-change=${this.onDistortionChange}
+        @chorus-change=${this.onChorusChange}
+        @eq-change=${this.onEqChange}
       >
-        <p style="color: var(--nd-fg-dim); font-size: 13px;">Effects coming soon.</p>
+        <nd-effects-panel .params=${fxParams}></nd-effects-panel>
       </nd-drawer>
     `;
   }
@@ -374,6 +390,28 @@ export class NdApp extends LitElement {
     const { index, envelope } = e.detail;
     const key = index === 2 ? 'osc2' : 'osc1';
     this.store.update({ [key]: { envelope } });
+  }
+
+  private onEffectsStoreChange = (e: Event): void => {
+    const update = (e as CustomEvent<EffectsParamsUpdate>).detail;
+    this.engine?.effects.updateParams(update);
+    this.fxParamVersion++;
+  };
+
+  private onReverbChange(e: CustomEvent<Partial<ReverbParams>>): void {
+    this.effectsStore.update({ reverb: e.detail });
+  }
+
+  private onDistortionChange(e: CustomEvent<Partial<DistortionParams>>): void {
+    this.effectsStore.update({ distortion: e.detail });
+  }
+
+  private onChorusChange(e: CustomEvent<Partial<ChorusParams>>): void {
+    this.effectsStore.update({ chorus: e.detail });
+  }
+
+  private onEqChange(e: CustomEvent<Partial<EQParams>>): void {
+    this.effectsStore.update({ eq: e.detail });
   }
 
   private onDrawerClose(): void {

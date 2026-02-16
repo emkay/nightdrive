@@ -67,7 +67,7 @@ export class NdKnob extends LitElement {
   @property({ type: Number }) value = 50;
   @property({ type: Number }) step = 1;
   @property({ type: String }) label = '';
-  @property({ type: String, attribute: 'value-format' }) valueFormat: 'number' | 'percent' | 'hz' | 'ms' | 's' = 'number';
+  @property({ type: String, attribute: 'value-format' }) valueFormat: 'number' | 'percent' | 'hz' | 'ms' | 's' | 'db' = 'number';
   @property({ type: String }) scale: 'linear' | 'log' = 'linear';
 
   private dragging = false;
@@ -122,6 +122,7 @@ export class NdKnob extends LitElement {
       case 'hz': return this.value >= 1000 ? `${(this.value / 1000).toFixed(1)}k` : `${Math.round(this.value)}`;
       case 'ms': return `${Math.round(this.value)}ms`;
       case 's': return `${this.value.toFixed(2)}s`;
+      case 'db': return `${this.value > 0 ? '+' : ''}${this.value.toFixed(1)}dB`;
       default: return `${Math.round(this.value * 100) / 100}`;
     }
   }
