@@ -179,6 +179,7 @@ export class NdApp extends LitElement {
   @state() private volume = 70;
   @state() private activeTab: 'keyboard' | 'sequencer' = 'keyboard';
   @state() private helpMode = false;
+  @state() private showVisualizers = false;
   @state() private drawerOpen = false;
   @state() private paramVersion = 0;
   @state() private fxParamVersion = 0;
@@ -248,6 +249,10 @@ export class NdApp extends LitElement {
             ></nd-knob>
           </nd-tooltip>
           <button
+            class="help-btn ${this.showVisualizers ? 'active' : ''}"
+            @click=${() => { this.showVisualizers = !this.showVisualizers; }}
+          >VIZ</button>
+          <button
             class="help-btn"
             @click=${() => { this.drawerOpen = true; }}
           >FX</button>
@@ -263,11 +268,13 @@ export class NdApp extends LitElement {
           <nd-oscillator .index=${1} .params=${osc1} .help=${this.helpMode} @osc-change=${this.onOscChange}></nd-oscillator>
           <nd-filter .index=${1} .params=${osc1} .help=${this.helpMode} @filter-change=${this.onFilterChange}></nd-filter>
           <nd-envelope .index=${1} .params=${osc1} .help=${this.helpMode} @envelope-change=${this.onEnvelopeChange}></nd-envelope>
+          ${this.showVisualizers ? html`<nd-visualizer mode="scope" .analyser=${this.engine?.analyser ?? null}></nd-visualizer>` : ''}
         </div>
         <div class="osc-row">
           <nd-oscillator .index=${2} .params=${osc2} .help=${this.helpMode} @osc-change=${this.onOscChange}></nd-oscillator>
           <nd-filter .index=${2} .params=${osc2} .help=${this.helpMode} @filter-change=${this.onFilterChange}></nd-filter>
           <nd-envelope .index=${2} .params=${osc2} .help=${this.helpMode} @envelope-change=${this.onEnvelopeChange}></nd-envelope>
+          ${this.showVisualizers ? html`<nd-visualizer mode="spectrum" .analyser=${this.engine?.analyser ?? null}></nd-visualizer>` : ''}
         </div>
       </section>
 
