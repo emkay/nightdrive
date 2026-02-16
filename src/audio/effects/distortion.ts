@@ -38,7 +38,7 @@ export class DistortionEffect {
   }
 
   private makeCurve(drive: number): Float32Array {
-    const samples = 44100;
+    const samples = 1024;
     const curve = new Float32Array(samples);
     const k = drive;
     const tanhK = Math.tanh(k);

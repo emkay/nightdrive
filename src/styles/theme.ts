@@ -37,6 +37,19 @@ export const panelStyles = css`
   }
 `;
 
+export const effectPanelStyles = css`
+  :host { display: block; }
+  .panel-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .on-off {
+    background: var(--nd-bg-surface); border: 1px solid var(--nd-border); border-radius: 4px;
+    color: var(--nd-fg-dim); padding: 2px 8px; font-size: 10px; font-family: var(--nd-font-mono);
+    cursor: pointer; transition: all 0.1s;
+  }
+  .on-off.on { background: var(--nd-accent); color: var(--nd-bg); border-color: var(--nd-accent); }
+  .knobs { display: flex; justify-content: center; }
+  .knobs.disabled { opacity: 0.3; pointer-events: none; }
+`;
+
 export const toggleButtonStyles = css`
   .toggle-btn {
     background: var(--nd-bg-surface);

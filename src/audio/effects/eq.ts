@@ -7,6 +7,9 @@ export class EQEffect {
   private readonly mid: BiquadFilterNode;
   private readonly high: BiquadFilterNode;
   private _enabled = true;
+  private _lowGain = 0;
+  private _midGain = 0;
+  private _highGain = 0;
 
   constructor(ctx: BaseAudioContext) {
     this.low = ctx.createBiquadFilter();
@@ -33,21 +36,18 @@ export class EQEffect {
   }
 
   update(p: Partial<EQParams>): void {
+    if (p.lowGain !== undefined) this._lowGain = p.lowGain;
+    if (p.midGain !== undefined) this._midGain = p.midGain;
+    if (p.highGain !== undefined) this._highGain = p.highGain;
     if (p.enabled !== undefined) this._enabled = p.enabled;
+
     const t = this.low.context.currentTime;
-    if (!this._enabled) {
-      this.low.gain.setTargetAtTime(0, t, 0.02);
-      this.mid.gain.setTargetAtTime(0, t, 0.02);
-      this.high.gain.setTargetAtTime(0, t, 0.02);
-      return;
-    }
-    if (p.lowGain !== undefined) this.low.gain.setTargetAtTime(p.lowGain, t, 0.02);
-    if (p.midGain !== undefined) this.mid.gain.setTargetAtTime(p.midGain, t, 0.02);
-    if (p.midFreq !== undefined) this.mid.frequency.setTargetAtTime(p.midFreq, t, 0.02);
-    if (p.highGain !== undefined) this.high.gain.setTargetAtTime(p.highGain, t, 0.02);
-    // Re-apply gains when re-enabling
-    if (p.enabled === true) {
-      this.low.gain.setTargetAtTime(this.low.gain.value || 0, t, 0.02);
+    this.low.gain.setTargetAtTime(this._enabled ? this._lowGain : 0, t, 0.02);
+    this.mid.gain.setTargetAtTime(this._enabled ? this._midGain : 0, t, 0.02);
+    this.high.gain.setTargetAtTime(this._enabled ? this._highGain : 0, t, 0.02);
+
+    if (p.midFreq !== undefined) {
+      this.mid.frequency.setTargetAtTime(p.midFreq, t, 0.02);
     }
   }
 }
