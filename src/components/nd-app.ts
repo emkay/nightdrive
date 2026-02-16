@@ -177,6 +177,7 @@ export class NdApp extends LitElement {
   @state() private volume = 70;
   @state() private activeTab: 'keyboard' | 'sequencer' = 'keyboard';
   @state() private helpMode = false;
+  @state() private drawerOpen = false;
   @state() private paramVersion = 0;
 
   @query('nd-keyboard') private keyboard!: NdKeyboard;
@@ -235,6 +236,10 @@ export class NdApp extends LitElement {
             ></nd-knob>
           </nd-tooltip>
           <button
+            class="help-btn"
+            @click=${() => { this.drawerOpen = true; }}
+          >FX</button>
+          <button
             class="help-btn ${this.helpMode ? 'active' : ''}"
             @click=${this.toggleHelp}
           >?</button>
@@ -278,6 +283,14 @@ export class NdApp extends LitElement {
           <nd-sequencer .sequencer=${this.sequencer!} .help=${this.helpMode}></nd-sequencer>
         </section>
       `}
+
+      <nd-drawer
+        .open=${this.drawerOpen}
+        title="Effects"
+        @drawer-close=${this.onDrawerClose}
+      >
+        <p style="color: var(--nd-fg-dim); font-size: 13px;">Effects coming soon.</p>
+      </nd-drawer>
     `;
   }
 
@@ -361,6 +374,10 @@ export class NdApp extends LitElement {
     const { index, envelope } = e.detail;
     const key = index === 2 ? 'osc2' : 'osc1';
     this.store.update({ [key]: { envelope } });
+  }
+
+  private onDrawerClose(): void {
+    this.drawerOpen = false;
   }
 
   private toggleHelp(): void {
