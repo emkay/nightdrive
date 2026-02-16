@@ -97,6 +97,11 @@ export class NdApp extends LitElement {
         flex-wrap: wrap;
       }
 
+      .osc-row nd-visualizer {
+        flex: 1;
+        min-width: 160px;
+      }
+
       .tab-bar {
         display: flex;
         gap: 0;

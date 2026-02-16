@@ -10,8 +10,6 @@ export class NdVisualizer extends LitElement {
     css`
       :host {
         display: block;
-        flex: 1;
-        min-width: 160px;
       }
 
       .panel {
@@ -42,7 +40,7 @@ export class NdVisualizer extends LitElement {
   override render() {
     return html`
       <div class="panel">
-        <div class="panel-label">${this.mode === 'scope' ? 'scope' : 'spectrum'}</div>
+        <div class="panel-label">${this.mode}</div>
         <canvas></canvas>
       </div>
     `;
@@ -120,62 +118,49 @@ export class NdVisualizer extends LitElement {
     ctx.fillRect(0, 0, w, h);
 
     if (this.mode === 'scope') {
-      this.drawScope(ctx, analyser, w, h, this.accentColor);
+      this.drawScope(w, h);
     } else {
-      this.drawSpectrum(ctx, analyser, w, h, this.accentColor);
+      this.drawSpectrum(w, h);
     }
   }
 
-  private drawScope(
-    ctx: CanvasRenderingContext2D,
-    analyser: AnalyserNode,
-    w: number,
-    h: number,
-    accent: string,
-  ): void {
-    analyser.getByteTimeDomainData(this.dataArray);
+  private drawScope(w: number, h: number): void {
+    this.analyser!.getByteTimeDomainData(this.dataArray);
     const bufLen = this.dataArray.length;
 
-    ctx.lineWidth = 1.5;
-    ctx.strokeStyle = accent;
-    ctx.beginPath();
+    this.ctx.lineWidth = 1.5;
+    this.ctx.strokeStyle = this.accentColor;
+    this.ctx.beginPath();
 
     const sliceWidth = w / bufLen;
     let x = 0;
     for (let i = 0; i < bufLen; i++) {
       const v = this.dataArray[i] / 128.0;
       const y = (v * h) / 2;
-      if (i === 0) ctx.moveTo(x, y);
-      else ctx.lineTo(x, y);
+      if (i === 0) this.ctx.moveTo(x, y);
+      else this.ctx.lineTo(x, y);
       x += sliceWidth;
     }
-    ctx.lineTo(w, h / 2);
-    ctx.stroke();
+    this.ctx.lineTo(w, h / 2);
+    this.ctx.stroke();
   }
 
-  private drawSpectrum(
-    ctx: CanvasRenderingContext2D,
-    analyser: AnalyserNode,
-    w: number,
-    h: number,
-    accent: string,
-  ): void {
-    analyser.getByteFrequencyData(this.dataArray);
+  private drawSpectrum(w: number, h: number): void {
+    this.analyser!.getByteFrequencyData(this.dataArray);
 
-    // Show ~128 bars max for readability
     const bufLen = Math.min(this.dataArray.length, 128);
     const barWidth = w / bufLen;
 
-    ctx.fillStyle = accent;
-    ctx.shadowColor = accent;
-    ctx.shadowBlur = 4;
+    this.ctx.fillStyle = this.accentColor;
+    this.ctx.shadowColor = this.accentColor;
+    this.ctx.shadowBlur = 4;
 
     for (let i = 0; i < bufLen; i++) {
       const barHeight = (this.dataArray[i] / 255) * h;
-      ctx.fillRect(i * barWidth, h - barHeight, barWidth - 1, barHeight);
+      this.ctx.fillRect(i * barWidth, h - barHeight, barWidth - 1, barHeight);
     }
 
-    ctx.shadowBlur = 0;
+    this.ctx.shadowBlur = 0;
   }
 }
 
