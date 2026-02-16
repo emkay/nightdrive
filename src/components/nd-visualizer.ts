@@ -1,4 +1,4 @@
-import { LitElement, html, css } from 'lit';
+import { LitElement, html, css, type PropertyValues } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { theme, panelStyles } from '../styles/theme.js';
 
@@ -33,6 +33,9 @@ export class NdVisualizer extends LitElement {
   @property({ attribute: false }) analyser: AnalyserNode | null = null;
 
   private canvas!: HTMLCanvasElement;
+  private ctx!: CanvasRenderingContext2D;
+  private accentColor = '';
+  private bgColor = '';
   private animId = 0;
   private dataArray!: Uint8Array<ArrayBuffer>;
 
@@ -47,12 +50,26 @@ export class NdVisualizer extends LitElement {
 
   override firstUpdated(): void {
     this.canvas = this.renderRoot.querySelector('canvas')!;
-    this.startLoop();
+    this.ctx = this.canvas.getContext('2d')!;
+    const style = getComputedStyle(this);
+    this.accentColor = style.getPropertyValue('--nd-accent').trim() || '#00ccff';
+    this.bgColor = style.getPropertyValue('--nd-bg-panel').trim() || '#222';
+    if (this.analyser) this.startLoop();
+  }
+
+  override updated(changed: PropertyValues): void {
+    if (changed.has('analyser')) {
+      if (this.analyser && this.canvas) {
+        this.startLoop();
+      } else {
+        this.stopLoop();
+      }
+    }
   }
 
   override connectedCallback(): void {
     super.connectedCallback();
-    if (this.canvas) this.startLoop();
+    if (this.canvas && this.analyser) this.startLoop();
   }
 
   override disconnectedCallback(): void {
@@ -96,20 +113,16 @@ export class NdVisualizer extends LitElement {
       this.dataArray = new Uint8Array(bufLen) as Uint8Array<ArrayBuffer>;
     }
 
-    const ctx = canvas.getContext('2d')!;
+    const ctx = this.ctx;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-    // Get accent color from CSS custom property
-    const accent = getComputedStyle(this).getPropertyValue('--nd-accent').trim() || '#00ccff';
-    const bg = getComputedStyle(this).getPropertyValue('--nd-bg-panel').trim() || '#222';
-
-    ctx.fillStyle = bg;
+    ctx.fillStyle = this.bgColor;
     ctx.fillRect(0, 0, w, h);
 
     if (this.mode === 'scope') {
-      this.drawScope(ctx, analyser, w, h, accent);
+      this.drawScope(ctx, analyser, w, h, this.accentColor);
     } else {
-      this.drawSpectrum(ctx, analyser, w, h, accent);
+      this.drawSpectrum(ctx, analyser, w, h, this.accentColor);
     }
   }
 
