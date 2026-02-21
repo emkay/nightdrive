@@ -1,6 +1,6 @@
-import { LitElement, html, css } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
-import { theme } from '../styles/theme.js';
+import { LitElement, html, css } from 'lit'
+import { customElement, property } from 'lit/decorators.js'
+import { theme } from '../styles/theme.js'
 
 @customElement('nd-tooltip')
 export class NdTooltip extends LitElement {
@@ -71,11 +71,11 @@ export class NdTooltip extends LitElement {
         border-radius: 4px;
       }
     `,
-  ];
+  ]
 
-  @property({ type: String }) text = '';
-  @property({ type: Boolean, reflect: true }) active = false;
-  @property({ type: String }) position: 'top' | 'bottom' = 'top';
+  @property({ type: String }) text = ''
+  @property({ type: Boolean, reflect: true }) active = false
+  @property({ type: String }) position: 'top' | 'bottom' = 'top'
 
   override render() {
     return html`
@@ -85,7 +85,7 @@ export class NdTooltip extends LitElement {
           <slot></slot>
         </div>
       </div>
-    `;
+    `
   }
 }
 

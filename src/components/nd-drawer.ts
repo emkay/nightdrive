@@ -1,6 +1,6 @@
-import { LitElement, html, css } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
-import { theme } from '../styles/theme.js';
+import { LitElement, html, css } from 'lit'
+import { customElement, property } from 'lit/decorators.js'
+import { theme } from '../styles/theme.js'
 
 @customElement('nd-drawer')
 export class NdDrawer extends LitElement {
@@ -90,10 +90,10 @@ export class NdDrawer extends LitElement {
         padding: 16px;
       }
     `,
-  ];
+  ]
 
-  @property({ type: Boolean, reflect: true }) open = false;
-  @property() title = '';
+  @property({ type: Boolean, reflect: true }) open = false
+  @property() title = ''
 
   override render() {
     return html`
@@ -107,11 +107,11 @@ export class NdDrawer extends LitElement {
           <slot></slot>
         </div>
       </div>
-    `;
+    `
   }
 
   private close(): void {
-    this.dispatchEvent(new CustomEvent('drawer-close', { bubbles: true, composed: true }));
+    this.dispatchEvent(new CustomEvent('drawer-close', { bubbles: true, composed: true }))
   }
 }
 

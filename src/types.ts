@@ -51,7 +51,7 @@ export const DEFAULT_VOICE_PARAMS: VoiceParams = {
     filterQ: 5,
     envelope: { attack: 0.01, decay: 0.2, sustain: 0.6, release: 0.3 },
   },
-};
+}
 
 export interface NoteEvent {
   note: number;
@@ -117,10 +117,10 @@ export const DEFAULT_EFFECTS_PARAMS: EffectsParams = {
   distortion: { enabled: false, mix: 0.5, drive: 10, tone: 4000 },
   chorus: { enabled: false, mix: 0.5, rate: 1.5, depth: 0.5, delay: 15 },
   eq: { enabled: true, lowGain: 0, midGain: 0, midFreq: 1000, highGain: 0 },
-};
+}
 
 /** Convert MIDI note number to frequency in Hz. */
 export function midiToFreq(note: number): number {
-  const n = Math.max(0, Math.min(127, note));
-  return 440 * Math.pow(2, (n - 69) / 12);
+  const n = Math.max(0, Math.min(127, note))
+  return 440 * Math.pow(2, (n - 69) / 12)
 }

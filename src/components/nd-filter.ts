@@ -1,15 +1,15 @@
-import { LitElement, html, css } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
-import { theme, panelStyles, toggleButtonStyles } from '../styles/theme.js';
-import type { FilterType, OscParams } from '../types.js';
-import './nd-tooltip.js';
+import { LitElement, html, css } from 'lit'
+import { customElement, property } from 'lit/decorators.js'
+import { theme, panelStyles, toggleButtonStyles } from '../styles/theme.js'
+import type { FilterType, OscParams } from '../types.js'
+import './nd-tooltip.js'
 
 const FILTER_TYPES: { type: FilterType; label: string }[] = [
   { type: 'lowpass', label: 'LP' },
   { type: 'highpass', label: 'HP' },
   { type: 'bandpass', label: 'BP' },
   { type: 'notch', label: 'NOTCH' },
-];
+]
 
 @customElement('nd-filter')
 export class NdFilter extends LitElement {
@@ -34,15 +34,15 @@ export class NdFilter extends LitElement {
         justify-content: center;
       }
     `,
-  ];
+  ]
 
-  @property({ type: Number }) index = 1;
-  @property({ attribute: false }) params!: OscParams;
-  @property({ type: Boolean }) help = false;
+  @property({ type: Number }) index = 1
+  @property({ attribute: false }) params!: OscParams
+  @property({ type: Boolean }) help = false
 
   override render() {
-    const p = this.params;
-    if (!p) return html``;
+    const p = this.params
+    if (!p) return html``
     return html`
       <div class="panel">
         <div class="panel-label">Filter ${this.index}</div>
@@ -87,7 +87,7 @@ export class NdFilter extends LitElement {
           </nd-tooltip>
         </div>
       </div>
-    `;
+    `
   }
 
   private selectType(type: FilterType): void {
@@ -97,7 +97,7 @@ export class NdFilter extends LitElement {
         bubbles: true,
         composed: true,
       }),
-    );
+    )
   }
 
   private onCutoff(e: CustomEvent<number>): void {
@@ -107,7 +107,7 @@ export class NdFilter extends LitElement {
         bubbles: true,
         composed: true,
       }),
-    );
+    )
   }
 
   private onResonance(e: CustomEvent<number>): void {
@@ -117,7 +117,7 @@ export class NdFilter extends LitElement {
         bubbles: true,
         composed: true,
       }),
-    );
+    )
   }
 }
 

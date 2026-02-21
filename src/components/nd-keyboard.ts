@@ -1,7 +1,7 @@
-import { LitElement, html, css } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
-import { theme } from '../styles/theme.js';
-import './nd-tooltip.js';
+import { LitElement, html, css } from 'lit'
+import { customElement, property } from 'lit/decorators.js'
+import { theme } from '../styles/theme.js'
+import './nd-tooltip.js'
 
 interface KeyDef {
   note: number;
@@ -58,20 +58,20 @@ export class NdKeyboard extends LitElement {
         background: linear-gradient(to bottom, #555, #333);
       }
     `,
-  ];
+  ]
 
-  @property({ type: Number }) startNote = 48;
-  @property({ type: Number }) octaves = 2;
-  @property({ type: Boolean }) help = false;
+  @property({ type: Number }) startNote = 48
+  @property({ type: Number }) octaves = 2
+  @property({ type: Boolean }) help = false
 
-  private activeNotes = new Set<number>();
-  private pointerNoteMap = new Map<number, number>();
+  private activeNotes = new Set<number>()
+  private pointerNoteMap = new Map<number, number>()
 
   override render() {
-    const keys = this.buildKeys();
-    const whiteKeys = keys.filter(k => !k.isBlack);
-    const blackKeys = keys.filter(k => k.isBlack);
-    const totalWhites = whiteKeys.length;
+    const keys = this.buildKeys()
+    const whiteKeys = keys.filter(k => !k.isBlack)
+    const blackKeys = keys.filter(k => k.isBlack)
+    const totalWhites = whiteKeys.length
 
     return html`
       <nd-tooltip text="Click keys to play. Computer keys Z–M and Q–U also work." .active=${this.help} position="top">
@@ -85,80 +85,80 @@ export class NdKeyboard extends LitElement {
               data-note=${k.note}></div>
           `)}
           ${blackKeys.map(k => {
-            const leftPercent = (k.position / totalWhites) * 100;
+            const leftPercent = (k.position / totalWhites) * 100
             return html`
               <div class="black-key ${this.activeNotes.has(k.note) ? 'active' : ''}"
                 data-note=${k.note}
                 style="left: ${leftPercent}%; transform: translateX(-50%)"></div>
-            `;
+            `
           })}
         </div>
       </nd-tooltip>
-    `;
+    `
   }
 
   private buildKeys(): KeyDef[] {
-    const keys: KeyDef[] = [];
-    const blackOffsets = [0.6, 1.6, 3.6, 4.6, 5.6];
-    const isBlackInOctave = [false, true, false, true, false, false, true, false, true, false, true, false];
+    const keys: KeyDef[] = []
+    const blackOffsets = [0.6, 1.6, 3.6, 4.6, 5.6]
+    const isBlackInOctave = [false, true, false, true, false, false, true, false, true, false, true, false]
 
-    let whiteIndex = 0;
+    let whiteIndex = 0
 
     for (let oct = 0; oct < this.octaves; oct++) {
-      const octaveStart = this.startNote + oct * 12;
-      let localWhite = 0;
+      const octaveStart = this.startNote + oct * 12
+      let localWhite = 0
 
       for (let i = 0; i < 12; i++) {
-        const note = octaveStart + i;
-        const isBlack = isBlackInOctave[i];
+        const note = octaveStart + i
+        const isBlack = isBlackInOctave[i]
 
         if (isBlack) {
-          const blackIdx = [1, 3, 6, 8, 10].indexOf(i);
-          const pos = whiteIndex - localWhite + blackOffsets[blackIdx];
-          keys.push({ note, isBlack: true, position: pos });
+          const blackIdx = [1, 3, 6, 8, 10].indexOf(i)
+          const pos = whiteIndex - localWhite + blackOffsets[blackIdx]
+          keys.push({ note, isBlack: true, position: pos })
         } else {
-          keys.push({ note, isBlack: false, position: whiteIndex });
-          whiteIndex++;
-          localWhite++;
+          keys.push({ note, isBlack: false, position: whiteIndex })
+          whiteIndex++
+          localWhite++
         }
       }
     }
 
-    return keys;
+    return keys
   }
 
   private onPointerDown = (e: PointerEvent): void => {
-    const target = e.target as HTMLElement;
-    const noteStr = target.dataset.note;
-    if (!noteStr) return;
+    const target = e.target as HTMLElement
+    const noteStr = target.dataset.note
+    if (!noteStr) return
 
-    e.preventDefault();
-    target.setPointerCapture(e.pointerId);
+    e.preventDefault()
+    target.setPointerCapture(e.pointerId)
 
-    const note = parseInt(noteStr, 10);
-    this.pointerNoteMap.set(e.pointerId, note);
-    this.activeNotes.add(note);
-    this.requestUpdate();
-    this.emitNote('note-on', note, 100);
-  };
+    const note = parseInt(noteStr, 10)
+    this.pointerNoteMap.set(e.pointerId, note)
+    this.activeNotes.add(note)
+    this.requestUpdate()
+    this.emitNote('note-on', note, 100)
+  }
 
   private onPointerUp = (e: PointerEvent): void => {
-    const note = this.pointerNoteMap.get(e.pointerId);
-    if (note === undefined) return;
+    const note = this.pointerNoteMap.get(e.pointerId)
+    if (note === undefined) return
 
-    this.pointerNoteMap.delete(e.pointerId);
-    this.activeNotes.delete(note);
-    this.requestUpdate();
-    this.emitNote('note-off', note, 0);
-  };
+    this.pointerNoteMap.delete(e.pointerId)
+    this.activeNotes.delete(note)
+    this.requestUpdate()
+    this.emitNote('note-off', note, 0)
+  }
 
   setNoteActive(note: number, active: boolean): void {
     if (active) {
-      this.activeNotes.add(note);
+      this.activeNotes.add(note)
     } else {
-      this.activeNotes.delete(note);
+      this.activeNotes.delete(note)
     }
-    this.requestUpdate();
+    this.requestUpdate()
   }
 
   private emitNote(type: 'note-on' | 'note-off', note: number, velocity: number): void {
@@ -168,7 +168,7 @@ export class NdKeyboard extends LitElement {
         bubbles: true,
         composed: true,
       }),
-    );
+    )
   }
 }
 

@@ -1,8 +1,8 @@
-import { LitElement, html, css } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
-import { theme, panelStyles } from '../styles/theme.js';
-import type { ADSRParams, OscParams } from '../types.js';
-import './nd-tooltip.js';
+import { LitElement, html, css } from 'lit'
+import { customElement, property } from 'lit/decorators.js'
+import { theme, panelStyles } from '../styles/theme.js'
+import type { ADSRParams, OscParams } from '../types.js'
+import './nd-tooltip.js'
 
 @customElement('nd-envelope')
 export class NdEnvelope extends LitElement {
@@ -20,16 +20,16 @@ export class NdEnvelope extends LitElement {
         justify-content: center;
       }
     `,
-  ];
+  ]
 
-  @property({ type: Number }) index = 1;
-  @property({ attribute: false }) params!: OscParams;
-  @property({ type: Boolean }) help = false;
+  @property({ type: Number }) index = 1
+  @property({ attribute: false }) params!: OscParams
+  @property({ type: Boolean }) help = false
 
   override render() {
-    const p = this.params;
-    if (!p) return html``;
-    const env = p.envelope;
+    const p = this.params
+    if (!p) return html``
+    const env = p.envelope
     return html`
       <div class="panel">
         <div class="panel-label">Envelope ${this.index}</div>
@@ -84,7 +84,7 @@ export class NdEnvelope extends LitElement {
           </nd-tooltip>
         </div>
       </div>
-    `;
+    `
   }
 
   private emitEnvelope(envelope: ADSRParams): void {
@@ -94,23 +94,23 @@ export class NdEnvelope extends LitElement {
         bubbles: true,
         composed: true,
       }),
-    );
+    )
   }
 
   private onAttack(e: CustomEvent<number>): void {
-    this.emitEnvelope({ ...this.params.envelope, attack: e.detail });
+    this.emitEnvelope({ ...this.params.envelope, attack: e.detail })
   }
 
   private onDecay(e: CustomEvent<number>): void {
-    this.emitEnvelope({ ...this.params.envelope, decay: e.detail });
+    this.emitEnvelope({ ...this.params.envelope, decay: e.detail })
   }
 
   private onSustain(e: CustomEvent<number>): void {
-    this.emitEnvelope({ ...this.params.envelope, sustain: e.detail / 100 });
+    this.emitEnvelope({ ...this.params.envelope, sustain: e.detail / 100 })
   }
 
   private onRelease(e: CustomEvent<number>): void {
-    this.emitEnvelope({ ...this.params.envelope, release: e.detail });
+    this.emitEnvelope({ ...this.params.envelope, release: e.detail })
   }
 }
 

@@ -1,17 +1,17 @@
-import { LitElement, html } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
-import { theme, panelStyles, effectPanelStyles } from '../styles/theme.js';
-import type { ReverbParams } from '../types.js';
+import { LitElement, html } from 'lit'
+import { customElement, property } from 'lit/decorators.js'
+import { theme, panelStyles, effectPanelStyles } from '../styles/theme.js'
+import type { ReverbParams } from '../types.js'
 
 @customElement('nd-reverb')
 export class NdReverb extends LitElement {
-  static override styles = [theme, panelStyles, effectPanelStyles];
+  static override styles = [theme, panelStyles, effectPanelStyles]
 
-  @property({ attribute: false }) params!: ReverbParams;
+  @property({ attribute: false }) params!: ReverbParams
 
   override render() {
-    const p = this.params;
-    if (!p) return html``;
+    const p = this.params
+    if (!p) return html``
     return html`
       <div class="panel">
         <div class="panel-header">
@@ -29,16 +29,16 @@ export class NdReverb extends LitElement {
             value-format="ms" @input=${this.onPreDelay}></nd-knob>
         </div>
       </div>
-    `;
+    `
   }
 
-  private toggle(): void { this.emit({ enabled: !this.params.enabled }); }
-  private onMix(e: CustomEvent<number>): void { this.emit({ mix: e.detail / 100 }); }
-  private onDecay(e: CustomEvent<number>): void { this.emit({ decay: e.detail }); }
-  private onPreDelay(e: CustomEvent<number>): void { this.emit({ preDelay: e.detail / 1000 }); }
+  private toggle(): void { this.emit({ enabled: !this.params.enabled }) }
+  private onMix(e: CustomEvent<number>): void { this.emit({ mix: e.detail / 100 }) }
+  private onDecay(e: CustomEvent<number>): void { this.emit({ decay: e.detail }) }
+  private onPreDelay(e: CustomEvent<number>): void { this.emit({ preDelay: e.detail / 1000 }) }
 
   private emit(detail: Partial<ReverbParams>): void {
-    this.dispatchEvent(new CustomEvent('reverb-change', { detail, bubbles: true, composed: true }));
+    this.dispatchEvent(new CustomEvent('reverb-change', { detail, bubbles: true, composed: true }))
   }
 }
 

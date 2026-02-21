@@ -1,4 +1,4 @@
-import { css } from 'lit';
+import { css } from 'lit'
 
 export const theme = css`
   :host {
@@ -18,7 +18,7 @@ export const theme = css`
     font-family: var(--nd-font);
     color: var(--nd-fg);
   }
-`;
+`
 
 export const panelStyles = css`
   .panel {
@@ -35,7 +35,7 @@ export const panelStyles = css`
     color: var(--nd-fg-dim);
     margin-bottom: 8px;
   }
-`;
+`
 
 export const effectPanelStyles = css`
   :host { display: block; }
@@ -48,7 +48,7 @@ export const effectPanelStyles = css`
   .on-off.on { background: var(--nd-accent); color: var(--nd-bg); border-color: var(--nd-accent); }
   .knobs { display: flex; justify-content: center; }
   .knobs.disabled { opacity: 0.3; pointer-events: none; }
-`;
+`
 
 export const toggleButtonStyles = css`
   .toggle-btn {
@@ -73,4 +73,4 @@ export const toggleButtonStyles = css`
     color: var(--nd-bg);
     border-color: var(--nd-accent);
   }
-`;
+`

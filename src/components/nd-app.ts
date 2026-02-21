@@ -1,17 +1,17 @@
-import { LitElement, html, css } from 'lit';
-import { customElement, state, query } from 'lit/decorators.js';
-import { theme, panelStyles } from '../styles/theme.js';
-import { AudioEngine } from '../audio/engine.js';
-import { VoiceAllocator } from '../audio/voice-allocator.js';
-import { StepSequencer } from '../audio/sequencer.js';
-import { MidiAccess } from '../midi/midi-access.js';
-import { MidiHandler } from '../midi/midi-handler.js';
-import { ParamStore } from '../param-store.js';
-import { EffectsParamStore } from '../effects-param-store.js';
-import type { NoteEvent, FilterType, ADSRParams, VoiceParamsUpdate, EffectsParamsUpdate, ReverbParams, DistortionParams, ChorusParams, EQParams } from '../types.js';
-import type { OscChangeDetail } from './nd-oscillator.js';
-import type { NdKeyboard } from './nd-keyboard.js';
-import './nd-tooltip.js';
+import { LitElement, html, css } from 'lit'
+import { customElement, state, query } from 'lit/decorators.js'
+import { theme, panelStyles } from '../styles/theme.js'
+import { AudioEngine } from '../audio/engine.js'
+import { VoiceAllocator } from '../audio/voice-allocator.js'
+import { StepSequencer } from '../audio/sequencer.js'
+import { MidiAccess } from '../midi/midi-access.js'
+import { MidiHandler } from '../midi/midi-handler.js'
+import { ParamStore } from '../param-store.js'
+import { EffectsParamStore } from '../effects-param-store.js'
+import type { NoteEvent, FilterType, ADSRParams, VoiceParamsUpdate, EffectsParamsUpdate, ReverbParams, DistortionParams, ChorusParams, EQParams } from '../types.js'
+import type { OscChangeDetail } from './nd-oscillator.js'
+import type { NdKeyboard } from './nd-keyboard.js'
+import './nd-tooltip.js'
 
 @customElement('nd-app')
 export class NdApp extends LitElement {
@@ -159,15 +159,15 @@ export class NdApp extends LitElement {
         letter-spacing: 2px;
       }
     `,
-  ];
+  ]
 
-  private engine: AudioEngine | null = null;
-  private allocator: VoiceAllocator | null = null;
-  private sequencer: StepSequencer | null = null;
-  private midiAccess = new MidiAccess();
-  private midiHandler = new MidiHandler();
-  private store = new ParamStore();
-  private effectsStore = new EffectsParamStore();
+  private engine: AudioEngine | null = null
+  private allocator: VoiceAllocator | null = null
+  private sequencer: StepSequencer | null = null
+  private midiAccess = new MidiAccess()
+  private midiHandler = new MidiHandler()
+  private store = new ParamStore()
+  private effectsStore = new EffectsParamStore()
 
   // Lower row: Z–M = C3–B3, sharps on S/D/G/H/J
   // Upper row: Q–U = C4–B4, sharps on 2/3/5/6/7
@@ -176,57 +176,57 @@ export class NdApp extends LitElement {
     b: 55, h: 56, n: 57, j: 58, m: 59,
     q: 60, 2: 61, w: 62, 3: 63, e: 64, r: 65, 5: 66,
     t: 67, 6: 68, y: 69, 7: 70, u: 71,
-  };
-  private heldKeys = new Set<string>();
+  }
+  private heldKeys = new Set<string>()
 
-  @state() private started = false;
-  @state() private midiConnected = false;
-  @state() private volume = 70;
-  @state() private activeTab: 'keyboard' | 'sequencer' = 'keyboard';
-  @state() private helpMode = false;
-  @state() private showVisualizers = false;
-  @state() private drawerOpen = false;
-  @state() private paramVersion = 0;
-  @state() private fxParamVersion = 0;
+  @state() private started = false
+  @state() private midiConnected = false
+  @state() private volume = 70
+  @state() private activeTab: 'keyboard' | 'sequencer' = 'keyboard'
+  @state() private helpMode = false
+  @state() private showVisualizers = false
+  @state() private drawerOpen = false
+  @state() private paramVersion = 0
+  @state() private fxParamVersion = 0
 
-  @query('nd-keyboard') private keyboard!: NdKeyboard;
+  @query('nd-keyboard') private keyboard!: NdKeyboard
 
   override connectedCallback(): void {
-    super.connectedCallback();
-    this.setupMidi();
-    this.store.addEventListener('change', this.onStoreChange);
-    this.effectsStore.addEventListener('change', this.onEffectsStoreChange);
-    window.addEventListener('keydown', this.onKeyDown);
-    window.addEventListener('keyup', this.onKeyUp);
+    super.connectedCallback()
+    this.setupMidi()
+    this.store.addEventListener('change', this.onStoreChange)
+    this.effectsStore.addEventListener('change', this.onEffectsStoreChange)
+    window.addEventListener('keydown', this.onKeyDown)
+    window.addEventListener('keyup', this.onKeyUp)
   }
 
   override disconnectedCallback(): void {
-    super.disconnectedCallback();
-    this.store.removeEventListener('change', this.onStoreChange);
-    this.effectsStore.removeEventListener('change', this.onEffectsStoreChange);
-    window.removeEventListener('keydown', this.onKeyDown);
-    window.removeEventListener('keyup', this.onKeyUp);
-    this.sequencer?.dispose();
-    this.allocator?.dispose();
-    this.midiHandler.dispose();
-    this.engine = null;
-    this.allocator = null;
-    this.sequencer = null;
+    super.disconnectedCallback()
+    this.store.removeEventListener('change', this.onStoreChange)
+    this.effectsStore.removeEventListener('change', this.onEffectsStoreChange)
+    window.removeEventListener('keydown', this.onKeyDown)
+    window.removeEventListener('keyup', this.onKeyUp)
+    this.sequencer?.dispose()
+    this.allocator?.dispose()
+    this.midiHandler.dispose()
+    this.engine = null
+    this.allocator = null
+    this.sequencer = null
   }
 
   override render() {
     // Read from stores (version counters trigger re-render on changes).
     // Shallow-copy so Lit detects changes (stores mutate in place).
-    void this.paramVersion;
-    void this.fxParamVersion;
-    const osc1 = { ...this.store.osc1, envelope: { ...this.store.osc1.envelope } };
-    const osc2 = { ...this.store.osc2, envelope: { ...this.store.osc2.envelope } };
+    void this.paramVersion
+    void this.fxParamVersion
+    const osc1 = { ...this.store.osc1, envelope: { ...this.store.osc1.envelope } }
+    const osc2 = { ...this.store.osc2, envelope: { ...this.store.osc2.envelope } }
     const fxParams = {
       reverb: { ...this.effectsStore.reverb },
       distortion: { ...this.effectsStore.distortion },
       chorus: { ...this.effectsStore.chorus },
       eq: { ...this.effectsStore.eq },
-    };
+    }
 
     return html`
       ${!this.started
@@ -255,11 +255,11 @@ export class NdApp extends LitElement {
           </nd-tooltip>
           <button
             class="help-btn ${this.showVisualizers ? 'active' : ''}"
-            @click=${() => { this.showVisualizers = !this.showVisualizers; }}
+            @click=${() => { this.showVisualizers = !this.showVisualizers }}
           >VIZ</button>
           <button
             class="help-btn"
-            @click=${() => { this.drawerOpen = true; }}
+            @click=${() => { this.drawerOpen = true }}
           >FX</button>
           <button
             class="help-btn ${this.helpMode ? 'active' : ''}"
@@ -319,145 +319,145 @@ export class NdApp extends LitElement {
       >
         <nd-effects-panel .params=${fxParams}></nd-effects-panel>
       </nd-drawer>
-    `;
+    `
   }
 
   private async start(): Promise<void> {
     if (!this.engine) {
-      this.engine = new AudioEngine();
-      this.allocator = new VoiceAllocator(this.engine.ctx, this.engine.destination);
-      this.sequencer = new StepSequencer(this.allocator, this.engine.ctx);
+      this.engine = new AudioEngine()
+      this.allocator = new VoiceAllocator(this.engine.ctx, this.engine.destination)
+      this.sequencer = new StepSequencer(this.allocator, this.engine.ctx)
     }
-    await this.engine.start();
-    this.started = true;
+    await this.engine.start()
+    this.started = true
   }
 
   private async setupMidi(): Promise<void> {
-    const ok = await this.midiAccess.request();
-    if (!ok) return;
+    const ok = await this.midiAccess.request()
+    if (!ok) return
 
     this.midiAccess.addEventListener('inputs-changed', () => {
-      const inputs = this.midiAccess.inputs;
-      this.midiHandler.attachAll(inputs);
-      this.midiConnected = inputs.length > 0;
-    });
+      const inputs = this.midiAccess.inputs
+      this.midiHandler.attachAll(inputs)
+      this.midiConnected = inputs.length > 0
+    })
 
-    this.midiHandler.attachAll(this.midiAccess.inputs);
-    this.midiConnected = this.midiAccess.inputs.length > 0;
+    this.midiHandler.attachAll(this.midiAccess.inputs)
+    this.midiConnected = this.midiAccess.inputs.length > 0
 
     this.midiHandler.addEventListener('note-on', ((e: CustomEvent<NoteEvent>) => {
-      if (!this.started) this.start();
-      this.allocator?.noteOn(e.detail.note, e.detail.velocity);
-      this.keyboard?.setNoteActive(e.detail.note, true);
-    }) as EventListener);
+      if (!this.started) this.start()
+      this.allocator?.noteOn(e.detail.note, e.detail.velocity)
+      this.keyboard?.setNoteActive(e.detail.note, true)
+    }) as EventListener)
 
     this.midiHandler.addEventListener('note-off', ((e: CustomEvent<NoteEvent>) => {
-      this.allocator?.noteOff(e.detail.note);
-      this.keyboard?.setNoteActive(e.detail.note, false);
-    }) as EventListener);
+      this.allocator?.noteOff(e.detail.note)
+      this.keyboard?.setNoteActive(e.detail.note, false)
+    }) as EventListener)
   }
 
   /** Called when the ParamStore changes — push to audio and re-render. */
   private onStoreChange = (e: Event): void => {
-    const update = (e as CustomEvent<VoiceParamsUpdate>).detail;
-    this.allocator?.updateParams(update);
-    this.paramVersion++;
-  };
+    const update = (e as CustomEvent<VoiceParamsUpdate>).detail
+    this.allocator?.updateParams(update)
+    this.paramVersion++
+  }
 
   private onNoteOn(e: CustomEvent<NoteEvent>): void {
-    if (!this.started) this.start();
-    this.allocator?.noteOn(e.detail.note, e.detail.velocity);
+    if (!this.started) this.start()
+    this.allocator?.noteOn(e.detail.note, e.detail.velocity)
   }
 
   private onNoteOff(e: CustomEvent<NoteEvent>): void {
-    this.allocator?.noteOff(e.detail.note);
+    this.allocator?.noteOff(e.detail.note)
   }
 
   private switchTab(tab: 'keyboard' | 'sequencer'): void {
-    if (tab === this.activeTab) return;
+    if (tab === this.activeTab) return
     if (this.activeTab === 'sequencer') {
-      this.sequencer?.stop();
+      this.sequencer?.stop()
     }
-    this.activeTab = tab;
+    this.activeTab = tab
   }
 
   private onVolumeChange(e: CustomEvent<number>): void {
-    this.volume = e.detail;
-    this.engine?.setMasterVolume(e.detail / 100);
+    this.volume = e.detail
+    this.engine?.setMasterVolume(e.detail / 100)
   }
 
   private onOscChange(e: CustomEvent<OscChangeDetail>): void {
-    const { index, oscType, detune, enabled, volume } = e.detail;
-    const key = index === 2 ? 'osc2' : 'osc1';
-    this.store.update({ [key]: { type: oscType, detune, enabled, volume } });
+    const { index, oscType, detune, enabled, volume } = e.detail
+    const key = index === 2 ? 'osc2' : 'osc1'
+    this.store.update({ [key]: { type: oscType, detune, enabled, volume } })
   }
 
   private onFilterChange(e: CustomEvent<{ index: number; filterType: FilterType; filterCutoff: number; filterQ: number }>): void {
-    const { index, filterType, filterCutoff, filterQ } = e.detail;
-    const key = index === 2 ? 'osc2' : 'osc1';
-    this.store.update({ [key]: { filterType, filterCutoff, filterQ } });
+    const { index, filterType, filterCutoff, filterQ } = e.detail
+    const key = index === 2 ? 'osc2' : 'osc1'
+    this.store.update({ [key]: { filterType, filterCutoff, filterQ } })
   }
 
   private onEnvelopeChange(e: CustomEvent<{ index: number; envelope: ADSRParams }>): void {
-    const { index, envelope } = e.detail;
-    const key = index === 2 ? 'osc2' : 'osc1';
-    this.store.update({ [key]: { envelope } });
+    const { index, envelope } = e.detail
+    const key = index === 2 ? 'osc2' : 'osc1'
+    this.store.update({ [key]: { envelope } })
   }
 
   private onEffectsStoreChange = (e: Event): void => {
-    const update = (e as CustomEvent<EffectsParamsUpdate>).detail;
-    this.engine?.effects.updateParams(update);
-    this.fxParamVersion++;
-  };
+    const update = (e as CustomEvent<EffectsParamsUpdate>).detail
+    this.engine?.effects.updateParams(update)
+    this.fxParamVersion++
+  }
 
   private onReverbChange(e: CustomEvent<Partial<ReverbParams>>): void {
-    this.effectsStore.update({ reverb: e.detail });
+    this.effectsStore.update({ reverb: e.detail })
   }
 
   private onDistortionChange(e: CustomEvent<Partial<DistortionParams>>): void {
-    this.effectsStore.update({ distortion: e.detail });
+    this.effectsStore.update({ distortion: e.detail })
   }
 
   private onChorusChange(e: CustomEvent<Partial<ChorusParams>>): void {
-    this.effectsStore.update({ chorus: e.detail });
+    this.effectsStore.update({ chorus: e.detail })
   }
 
   private onEqChange(e: CustomEvent<Partial<EQParams>>): void {
-    this.effectsStore.update({ eq: e.detail });
+    this.effectsStore.update({ eq: e.detail })
   }
 
   private onDrawerClose(): void {
-    this.drawerOpen = false;
+    this.drawerOpen = false
   }
 
   private toggleHelp(): void {
-    this.helpMode = !this.helpMode;
+    this.helpMode = !this.helpMode
   }
 
   private onKeyDown = (e: KeyboardEvent): void => {
-    if (e.repeat || e.ctrlKey || e.metaKey || e.altKey) return;
+    if (e.repeat || e.ctrlKey || e.metaKey || e.altKey) return
     if (e.key === '?') {
-      e.preventDefault();
-      this.toggleHelp();
-      return;
+      e.preventDefault()
+      this.toggleHelp()
+      return
     }
-    const note = NdApp.KEY_MAP[e.key.toLowerCase()];
-    if (note === undefined) return;
-    e.preventDefault();
-    this.heldKeys.add(e.key.toLowerCase());
-    if (!this.started) this.start();
-    this.allocator?.noteOn(note, 100);
-    this.keyboard?.setNoteActive(note, true);
-  };
+    const note = NdApp.KEY_MAP[e.key.toLowerCase()]
+    if (note === undefined) return
+    e.preventDefault()
+    this.heldKeys.add(e.key.toLowerCase())
+    if (!this.started) this.start()
+    this.allocator?.noteOn(note, 100)
+    this.keyboard?.setNoteActive(note, true)
+  }
 
   private onKeyUp = (e: KeyboardEvent): void => {
-    const key = e.key.toLowerCase();
-    const note = NdApp.KEY_MAP[key];
-    if (note === undefined) return;
-    this.heldKeys.delete(key);
-    this.allocator?.noteOff(note);
-    this.keyboard?.setNoteActive(note, false);
-  };
+    const key = e.key.toLowerCase()
+    const note = NdApp.KEY_MAP[key]
+    if (note === undefined) return
+    this.heldKeys.delete(key)
+    this.allocator?.noteOff(note)
+    this.keyboard?.setNoteActive(note, false)
+  }
 }
 
 declare global {

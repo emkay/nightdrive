@@ -1,17 +1,17 @@
-import { LitElement, html } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
-import { theme, panelStyles, effectPanelStyles } from '../styles/theme.js';
-import type { EQParams } from '../types.js';
+import { LitElement, html } from 'lit'
+import { customElement, property } from 'lit/decorators.js'
+import { theme, panelStyles, effectPanelStyles } from '../styles/theme.js'
+import type { EQParams } from '../types.js'
 
 @customElement('nd-eq')
 export class NdEQ extends LitElement {
-  static override styles = [theme, panelStyles, effectPanelStyles];
+  static override styles = [theme, panelStyles, effectPanelStyles]
 
-  @property({ attribute: false }) params!: EQParams;
+  @property({ attribute: false }) params!: EQParams
 
   override render() {
-    const p = this.params;
-    if (!p) return html``;
+    const p = this.params
+    if (!p) return html``
     return html`
       <div class="panel">
         <div class="panel-header">
@@ -31,17 +31,17 @@ export class NdEQ extends LitElement {
             value-format="db" @input=${this.onHigh}></nd-knob>
         </div>
       </div>
-    `;
+    `
   }
 
-  private toggle(): void { this.emit({ enabled: !this.params.enabled }); }
-  private onLow(e: CustomEvent<number>): void { this.emit({ lowGain: e.detail }); }
-  private onMid(e: CustomEvent<number>): void { this.emit({ midGain: e.detail }); }
-  private onMidFreq(e: CustomEvent<number>): void { this.emit({ midFreq: e.detail }); }
-  private onHigh(e: CustomEvent<number>): void { this.emit({ highGain: e.detail }); }
+  private toggle(): void { this.emit({ enabled: !this.params.enabled }) }
+  private onLow(e: CustomEvent<number>): void { this.emit({ lowGain: e.detail }) }
+  private onMid(e: CustomEvent<number>): void { this.emit({ midGain: e.detail }) }
+  private onMidFreq(e: CustomEvent<number>): void { this.emit({ midFreq: e.detail }) }
+  private onHigh(e: CustomEvent<number>): void { this.emit({ highGain: e.detail }) }
 
   private emit(detail: Partial<EQParams>): void {
-    this.dispatchEvent(new CustomEvent('eq-change', { detail, bubbles: true, composed: true }));
+    this.dispatchEvent(new CustomEvent('eq-change', { detail, bubbles: true, composed: true }))
   }
 }
 

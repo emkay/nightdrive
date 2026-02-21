@@ -1,8 +1,8 @@
-import { LitElement, html, css } from 'lit';
-import { customElement, property, state } from 'lit/decorators.js';
-import { theme, panelStyles } from '../styles/theme.js';
-import { StepSequencer, midiNoteName } from '../audio/sequencer.js';
-import './nd-tooltip.js';
+import { LitElement, html, css } from 'lit'
+import { customElement, property, state } from 'lit/decorators.js'
+import { theme, panelStyles } from '../styles/theme.js'
+import { StepSequencer, midiNoteName } from '../audio/sequencer.js'
+import './nd-tooltip.js'
 
 @customElement('nd-sequencer')
 export class NdSequencer extends LitElement {
@@ -93,44 +93,44 @@ export class NdSequencer extends LitElement {
         min-height: 14px;
       }
     `,
-  ];
+  ]
 
-  @property({ attribute: false }) sequencer!: StepSequencer;
-  @property({ type: Boolean }) help = false;
+  @property({ attribute: false }) sequencer!: StepSequencer
+  @property({ type: Boolean }) help = false
 
-  @state() private currentStep = -1;
-  @state() private bpm = 120;
+  @state() private currentStep = -1
+  @state() private bpm = 120
 
   private get playing(): boolean {
-    return this.sequencer?.isPlaying ?? false;
+    return this.sequencer?.isPlaying ?? false
   }
 
   private boundStepChange = (e: Event) => {
-    this.currentStep = (e as CustomEvent<number>).detail;
-  };
+    this.currentStep = (e as CustomEvent<number>).detail
+  }
 
   override connectedCallback(): void {
-    super.connectedCallback();
+    super.connectedCallback()
     if (this.sequencer) {
-      this.sequencer.addEventListener('step-change', this.boundStepChange);
+      this.sequencer.addEventListener('step-change', this.boundStepChange)
     }
   }
 
   override disconnectedCallback(): void {
-    super.disconnectedCallback();
-    this.sequencer?.removeEventListener('step-change', this.boundStepChange);
+    super.disconnectedCallback()
+    this.sequencer?.removeEventListener('step-change', this.boundStepChange)
   }
 
   override updated(changed: Map<string, unknown>): void {
     if (changed.has('sequencer')) {
-      const old = changed.get('sequencer') as StepSequencer | undefined;
-      old?.removeEventListener('step-change', this.boundStepChange);
-      this.sequencer?.addEventListener('step-change', this.boundStepChange);
+      const old = changed.get('sequencer') as StepSequencer | undefined
+      old?.removeEventListener('step-change', this.boundStepChange)
+      this.sequencer?.addEventListener('step-change', this.boundStepChange)
     }
   }
 
   override render() {
-    if (!this.sequencer) return html``;
+    if (!this.sequencer) return html``
 
     return html`
       <div class="sequencer">
@@ -186,30 +186,30 @@ export class NdSequencer extends LitElement {
           `)}
         </div>
       </div>
-    `;
+    `
   }
 
   private togglePlay(): void {
     if (this.playing) {
-      this.sequencer.stop();
+      this.sequencer.stop()
     } else {
-      this.sequencer.start();
+      this.sequencer.start()
     }
-    this.requestUpdate();
+    this.requestUpdate()
   }
 
   private onBpmChange(e: CustomEvent<number>): void {
-    this.bpm = e.detail;
-    this.sequencer.bpm = e.detail;
+    this.bpm = e.detail
+    this.sequencer.bpm = e.detail
   }
 
   private onNoteChange(index: number, note: number): void {
-    this.sequencer.steps[index].note = note;
-    this.requestUpdate();
+    this.sequencer.steps[index].note = note
+    this.requestUpdate()
   }
 
   private onVelocityChange(index: number, velocity: number): void {
-    this.sequencer.steps[index].velocity = velocity;
+    this.sequencer.steps[index].velocity = velocity
   }
 }
 

@@ -1,15 +1,15 @@
-import { LitElement, html, css } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
-import { theme, panelStyles, toggleButtonStyles } from '../styles/theme.js';
-import type { OscType, OscParams } from '../types.js';
-import './nd-tooltip.js';
+import { LitElement, html, css } from 'lit'
+import { customElement, property } from 'lit/decorators.js'
+import { theme, panelStyles, toggleButtonStyles } from '../styles/theme.js'
+import type { OscType, OscParams } from '../types.js'
+import './nd-tooltip.js'
 
 const WAVEFORMS: { type: OscType; label: string }[] = [
   { type: 'sine', label: 'SIN' },
   { type: 'triangle', label: 'TRI' },
   { type: 'sawtooth', label: 'SAW' },
   { type: 'square', label: 'SQR' },
-];
+]
 
 export interface OscChangeDetail {
   index: number;
@@ -72,15 +72,15 @@ export class NdOscillator extends LitElement {
         pointer-events: none;
       }
     `,
-  ];
+  ]
 
-  @property({ type: Number }) index = 1;
-  @property({ attribute: false }) params!: OscParams;
-  @property({ type: Boolean }) help = false;
+  @property({ type: Number }) index = 1
+  @property({ attribute: false }) params!: OscParams
+  @property({ type: Boolean }) help = false
 
   override render() {
-    const p = this.params;
-    if (!p) return html``;
+    const p = this.params
+    if (!p) return html``
     return html`
       <div class="panel">
         <div class="panel-header">
@@ -132,27 +132,27 @@ export class NdOscillator extends LitElement {
           </nd-tooltip>
         </div>
       </div>
-    `;
+    `
   }
 
   private toggleEnabled(): void {
-    this.emitChange({ enabled: !this.params.enabled });
+    this.emitChange({ enabled: !this.params.enabled })
   }
 
   private selectWave(type: OscType): void {
-    this.emitChange({ oscType: type });
+    this.emitChange({ oscType: type })
   }
 
   private onVolume(e: CustomEvent<number>): void {
-    this.emitChange({ volume: e.detail / 100 });
+    this.emitChange({ volume: e.detail / 100 })
   }
 
   private onDetune(e: CustomEvent<number>): void {
-    this.emitChange({ detune: e.detail });
+    this.emitChange({ detune: e.detail })
   }
 
   private emitChange(partial: { oscType?: OscType; detune?: number; enabled?: boolean; volume?: number }): void {
-    const p = this.params;
+    const p = this.params
     this.dispatchEvent(
       new CustomEvent<OscChangeDetail>('osc-change', {
         detail: {
@@ -165,7 +165,7 @@ export class NdOscillator extends LitElement {
         bubbles: true,
         composed: true,
       }),
-    );
+    )
   }
 }
 

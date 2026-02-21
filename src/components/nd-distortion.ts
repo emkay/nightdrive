@@ -1,17 +1,17 @@
-import { LitElement, html } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
-import { theme, panelStyles, effectPanelStyles } from '../styles/theme.js';
-import type { DistortionParams } from '../types.js';
+import { LitElement, html } from 'lit'
+import { customElement, property } from 'lit/decorators.js'
+import { theme, panelStyles, effectPanelStyles } from '../styles/theme.js'
+import type { DistortionParams } from '../types.js'
 
 @customElement('nd-distortion')
 export class NdDistortion extends LitElement {
-  static override styles = [theme, panelStyles, effectPanelStyles];
+  static override styles = [theme, panelStyles, effectPanelStyles]
 
-  @property({ attribute: false }) params!: DistortionParams;
+  @property({ attribute: false }) params!: DistortionParams
 
   override render() {
-    const p = this.params;
-    if (!p) return html``;
+    const p = this.params
+    if (!p) return html``
     return html`
       <div class="panel">
         <div class="panel-header">
@@ -29,16 +29,16 @@ export class NdDistortion extends LitElement {
             value-format="hz" scale="log" @input=${this.onTone}></nd-knob>
         </div>
       </div>
-    `;
+    `
   }
 
-  private toggle(): void { this.emit({ enabled: !this.params.enabled }); }
-  private onMix(e: CustomEvent<number>): void { this.emit({ mix: e.detail / 100 }); }
-  private onDrive(e: CustomEvent<number>): void { this.emit({ drive: e.detail }); }
-  private onTone(e: CustomEvent<number>): void { this.emit({ tone: e.detail }); }
+  private toggle(): void { this.emit({ enabled: !this.params.enabled }) }
+  private onMix(e: CustomEvent<number>): void { this.emit({ mix: e.detail / 100 }) }
+  private onDrive(e: CustomEvent<number>): void { this.emit({ drive: e.detail }) }
+  private onTone(e: CustomEvent<number>): void { this.emit({ tone: e.detail }) }
 
   private emit(detail: Partial<DistortionParams>): void {
-    this.dispatchEvent(new CustomEvent('distortion-change', { detail, bubbles: true, composed: true }));
+    this.dispatchEvent(new CustomEvent('distortion-change', { detail, bubbles: true, composed: true }))
   }
 }
 

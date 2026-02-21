@@ -1,17 +1,17 @@
-import { LitElement, html } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
-import { theme, panelStyles, effectPanelStyles } from '../styles/theme.js';
-import type { ChorusParams } from '../types.js';
+import { LitElement, html } from 'lit'
+import { customElement, property } from 'lit/decorators.js'
+import { theme, panelStyles, effectPanelStyles } from '../styles/theme.js'
+import type { ChorusParams } from '../types.js'
 
 @customElement('nd-chorus')
 export class NdChorus extends LitElement {
-  static override styles = [theme, panelStyles, effectPanelStyles];
+  static override styles = [theme, panelStyles, effectPanelStyles]
 
-  @property({ attribute: false }) params!: ChorusParams;
+  @property({ attribute: false }) params!: ChorusParams
 
   override render() {
-    const p = this.params;
-    if (!p) return html``;
+    const p = this.params
+    if (!p) return html``
     return html`
       <div class="panel">
         <div class="panel-header">
@@ -31,17 +31,17 @@ export class NdChorus extends LitElement {
             value-format="ms" @input=${this.onDelay}></nd-knob>
         </div>
       </div>
-    `;
+    `
   }
 
-  private toggle(): void { this.emit({ enabled: !this.params.enabled }); }
-  private onMix(e: CustomEvent<number>): void { this.emit({ mix: e.detail / 100 }); }
-  private onRate(e: CustomEvent<number>): void { this.emit({ rate: e.detail }); }
-  private onDepth(e: CustomEvent<number>): void { this.emit({ depth: e.detail / 100 }); }
-  private onDelay(e: CustomEvent<number>): void { this.emit({ delay: e.detail }); }
+  private toggle(): void { this.emit({ enabled: !this.params.enabled }) }
+  private onMix(e: CustomEvent<number>): void { this.emit({ mix: e.detail / 100 }) }
+  private onRate(e: CustomEvent<number>): void { this.emit({ rate: e.detail }) }
+  private onDepth(e: CustomEvent<number>): void { this.emit({ depth: e.detail / 100 }) }
+  private onDelay(e: CustomEvent<number>): void { this.emit({ delay: e.detail }) }
 
   private emit(detail: Partial<ChorusParams>): void {
-    this.dispatchEvent(new CustomEvent('chorus-change', { detail, bubbles: true, composed: true }));
+    this.dispatchEvent(new CustomEvent('chorus-change', { detail, bubbles: true, composed: true }))
   }
 }
 
