@@ -44,6 +44,6 @@ export class NdReverb extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    'nd-reverb': NdReverb;
+    'nd-reverb': NdReverb
   }
 }

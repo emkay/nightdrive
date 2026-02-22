@@ -3,31 +3,31 @@ export type OscType = 'sine' | 'sawtooth' | 'square' | 'triangle';
 export type FilterType = 'lowpass' | 'highpass' | 'bandpass' | 'notch';
 
 export interface ADSRParams {
-  attack: number;   // seconds
-  decay: number;    // seconds
-  sustain: number;  // 0–1
-  release: number;  // seconds
+  attack: number   // seconds
+  decay: number    // seconds
+  sustain: number  // 0–1
+  release: number  // seconds
 }
 
 export interface OscParams {
-  type: OscType;
-  detune: number;        // cents
-  enabled: boolean;
-  volume: number;        // 0–1
-  filterType: FilterType;
-  filterCutoff: number;  // Hz
-  filterQ: number;       // 0–30
-  envelope: ADSRParams;
+  type: OscType
+  detune: number        // cents
+  enabled: boolean
+  volume: number        // 0–1
+  filterType: FilterType
+  filterCutoff: number  // Hz
+  filterQ: number       // 0–30
+  envelope: ADSRParams
 }
 
 export interface VoiceParams {
-  osc1: OscParams;
-  osc2: OscParams;
+  osc1: OscParams
+  osc2: OscParams
 }
 
 export type VoiceParamsUpdate = {
-  osc1?: Partial<OscParams>;
-  osc2?: Partial<OscParams>;
+  osc1?: Partial<OscParams>
+  osc2?: Partial<OscParams>
 };
 
 export const DEFAULT_VOICE_PARAMS: VoiceParams = {
@@ -54,62 +54,62 @@ export const DEFAULT_VOICE_PARAMS: VoiceParams = {
 }
 
 export interface NoteEvent {
-  note: number;
-  velocity: number;
+  note: number
+  velocity: number
 }
 
 export interface SequencerStep {
-  note: number;     // MIDI note 36–84
-  velocity: number; // 0–127
+  note: number     // MIDI note 36–84
+  velocity: number // 0–127
 }
 
 export interface CCEvent {
-  controller: number;
-  value: number;
+  controller: number
+  value: number
 }
 
 export interface ReverbParams {
-  enabled: boolean;
-  mix: number;      // 0–1
-  decay: number;    // 0.1–10 seconds
-  preDelay: number; // 0–0.1 seconds
+  enabled: boolean
+  mix: number      // 0–1
+  decay: number    // 0.1–10 seconds
+  preDelay: number // 0–0.1 seconds
 }
 
 export interface DistortionParams {
-  enabled: boolean;
-  mix: number;   // 0–1
-  drive: number; // 1–100
-  tone: number;  // 200–8000 Hz
+  enabled: boolean
+  mix: number   // 0–1
+  drive: number // 1–100
+  tone: number  // 200–8000 Hz
 }
 
 export interface ChorusParams {
-  enabled: boolean;
-  mix: number;   // 0–1
-  rate: number;  // 0.1–10 Hz
-  depth: number; // 0–1
-  delay: number; // 5–30 ms
+  enabled: boolean
+  mix: number   // 0–1
+  rate: number  // 0.1–10 Hz
+  depth: number // 0–1
+  delay: number // 5–30 ms
 }
 
 export interface EQParams {
-  enabled: boolean;
-  lowGain: number;  // -12–+12 dB
-  midGain: number;  // -12–+12 dB
-  midFreq: number;  // 200–8000 Hz
-  highGain: number; // -12–+12 dB
+  enabled: boolean
+  lowGain: number  // -12–+12 dB
+  midGain: number  // -12–+12 dB
+  midFreq: number  // 200–8000 Hz
+  highGain: number // -12–+12 dB
 }
 
 export interface EffectsParams {
-  reverb: ReverbParams;
-  distortion: DistortionParams;
-  chorus: ChorusParams;
-  eq: EQParams;
+  reverb: ReverbParams
+  distortion: DistortionParams
+  chorus: ChorusParams
+  eq: EQParams
 }
 
 export type EffectsParamsUpdate = {
-  reverb?: Partial<ReverbParams>;
-  distortion?: Partial<DistortionParams>;
-  chorus?: Partial<ChorusParams>;
-  eq?: Partial<EQParams>;
+  reverb?: Partial<ReverbParams>
+  distortion?: Partial<DistortionParams>
+  chorus?: Partial<ChorusParams>
+  eq?: Partial<EQParams>
 }
 
 export const DEFAULT_EFFECTS_PARAMS: EffectsParams = {

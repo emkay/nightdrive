@@ -166,6 +166,6 @@ export class NdVisualizer extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    'nd-visualizer': NdVisualizer;
+    'nd-visualizer': NdVisualizer
   }
 }

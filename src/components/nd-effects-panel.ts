@@ -32,6 +32,6 @@ export class NdEffectsPanel extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    'nd-effects-panel': NdEffectsPanel;
+    'nd-effects-panel': NdEffectsPanel
   }
 }

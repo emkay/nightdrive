@@ -44,6 +44,6 @@ export class NdDistortion extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    'nd-distortion': NdDistortion;
+    'nd-distortion': NdDistortion
   }
 }

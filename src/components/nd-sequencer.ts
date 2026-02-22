@@ -215,6 +215,6 @@ export class NdSequencer extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    'nd-sequencer': NdSequencer;
+    'nd-sequencer': NdSequencer
   }
 }

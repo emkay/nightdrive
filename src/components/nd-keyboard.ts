@@ -4,9 +4,9 @@ import { theme } from '../styles/theme.js'
 import './nd-tooltip.js'
 
 interface KeyDef {
-  note: number;
-  isBlack: boolean;
-  position: number;
+  note: number
+  isBlack: boolean
+  position: number
 }
 
 @customElement('nd-keyboard')
@@ -174,6 +174,6 @@ export class NdKeyboard extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    'nd-keyboard': NdKeyboard;
+    'nd-keyboard': NdKeyboard
   }
 }

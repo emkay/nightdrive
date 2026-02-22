@@ -116,6 +116,6 @@ export class NdEnvelope extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    'nd-envelope': NdEnvelope;
+    'nd-envelope': NdEnvelope
   }
 }

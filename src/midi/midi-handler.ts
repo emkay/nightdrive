@@ -1,9 +1,9 @@
 import type { NoteEvent, CCEvent } from '../types.js'
 
 type MidiEventMap = {
-  'note-on': CustomEvent<NoteEvent>;
-  'note-off': CustomEvent<NoteEvent>;
-  'cc': CustomEvent<CCEvent>;
+  'note-on': CustomEvent<NoteEvent>
+  'note-off': CustomEvent<NoteEvent>
+  'cc': CustomEvent<CCEvent>
 };
 
 export class MidiHandler extends EventTarget {

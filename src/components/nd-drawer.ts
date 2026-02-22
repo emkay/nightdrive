@@ -117,6 +117,6 @@ export class NdDrawer extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    'nd-drawer': NdDrawer;
+    'nd-drawer': NdDrawer
   }
 }

@@ -4,7 +4,7 @@ import { theme, panelStyles, toggleButtonStyles } from '../styles/theme.js'
 import type { FilterType, OscParams } from '../types.js'
 import './nd-tooltip.js'
 
-const FILTER_TYPES: { type: FilterType; label: string }[] = [
+const FILTER_TYPES: { type: FilterType, label: string }[] = [
   { type: 'lowpass', label: 'LP' },
   { type: 'highpass', label: 'HP' },
   { type: 'bandpass', label: 'BP' },
@@ -123,6 +123,6 @@ export class NdFilter extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    'nd-filter': NdFilter;
+    'nd-filter': NdFilter
   }
 }

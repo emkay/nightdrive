@@ -91,6 +91,6 @@ export class NdTooltip extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    'nd-tooltip': NdTooltip;
+    'nd-tooltip': NdTooltip
   }
 }

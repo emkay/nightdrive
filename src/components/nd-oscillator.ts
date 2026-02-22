@@ -4,7 +4,7 @@ import { theme, panelStyles, toggleButtonStyles } from '../styles/theme.js'
 import type { OscType, OscParams } from '../types.js'
 import './nd-tooltip.js'
 
-const WAVEFORMS: { type: OscType; label: string }[] = [
+const WAVEFORMS: { type: OscType, label: string }[] = [
   { type: 'sine', label: 'SIN' },
   { type: 'triangle', label: 'TRI' },
   { type: 'sawtooth', label: 'SAW' },
@@ -12,11 +12,11 @@ const WAVEFORMS: { type: OscType; label: string }[] = [
 ]
 
 export interface OscChangeDetail {
-  index: number;
-  oscType: OscType;
-  detune: number;
-  enabled: boolean;
-  volume: number;  // 0–1
+  index: number
+  oscType: OscType
+  detune: number
+  enabled: boolean
+  volume: number  // 0–1
 }
 
 @customElement('nd-oscillator')
@@ -151,7 +151,7 @@ export class NdOscillator extends LitElement {
     this.emitChange({ detune: e.detail })
   }
 
-  private emitChange(partial: { oscType?: OscType; detune?: number; enabled?: boolean; volume?: number }): void {
+  private emitChange(partial: { oscType?: OscType, detune?: number, enabled?: boolean, volume?: number }): void {
     const p = this.params
     this.dispatchEvent(
       new CustomEvent<OscChangeDetail>('osc-change', {
@@ -171,6 +171,6 @@ export class NdOscillator extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    'nd-oscillator': NdOscillator;
+    'nd-oscillator': NdOscillator
   }
 }

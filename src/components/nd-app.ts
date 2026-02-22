@@ -392,13 +392,13 @@ export class NdApp extends LitElement {
     this.store.update({ [key]: { type: oscType, detune, enabled, volume } })
   }
 
-  private onFilterChange(e: CustomEvent<{ index: number; filterType: FilterType; filterCutoff: number; filterQ: number }>): void {
+  private onFilterChange(e: CustomEvent<{ index: number, filterType: FilterType, filterCutoff: number, filterQ: number }>): void {
     const { index, filterType, filterCutoff, filterQ } = e.detail
     const key = index === 2 ? 'osc2' : 'osc1'
     this.store.update({ [key]: { filterType, filterCutoff, filterQ } })
   }
 
-  private onEnvelopeChange(e: CustomEvent<{ index: number; envelope: ADSRParams }>): void {
+  private onEnvelopeChange(e: CustomEvent<{ index: number, envelope: ADSRParams }>): void {
     const { index, envelope } = e.detail
     const key = index === 2 ? 'osc2' : 'osc1'
     this.store.update({ [key]: { envelope } })
@@ -462,6 +462,6 @@ export class NdApp extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    'nd-app': NdApp;
+    'nd-app': NdApp
   }
 }

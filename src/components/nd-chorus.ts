@@ -47,6 +47,6 @@ export class NdChorus extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    'nd-chorus': NdChorus;
+    'nd-chorus': NdChorus
   }
 }

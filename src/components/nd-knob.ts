@@ -182,6 +182,6 @@ export class NdKnob extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    'nd-knob': NdKnob;
+    'nd-knob': NdKnob
   }
 }

@@ -47,6 +47,6 @@ export class NdEQ extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    'nd-eq': NdEQ;
+    'nd-eq': NdEQ
   }
 }
