@@ -110,7 +110,7 @@ export type EffectsParamsUpdate = {
   distortion?: Partial<DistortionParams>;
   chorus?: Partial<ChorusParams>;
   eq?: Partial<EQParams>;
-};
+}
 
 export const DEFAULT_EFFECTS_PARAMS: EffectsParams = {
   reverb: { enabled: false, mix: 0.3, decay: 2, preDelay: 0.02 },
